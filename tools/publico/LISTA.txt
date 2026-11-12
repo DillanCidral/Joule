@@ -1,0 +1,13 @@
+# O que vai ao repositorio publico (camada de seguranca, 2026-11-12).
+# Lista fechada: o que nao esta aqui nunca sai. Uma linha por caminho, a partir
+# da raiz do repositorio; pasta termina em "/" e vai inteira, sem bin/ e obj/.
+# Depois da copia, a pasta out/publico/ (documentacao escrita para o publico,
+# LICENSE, avisos de terceiros, .github) entra por cima.
+src/BatteryTray/
+src/BatteryScan/
+tools/diag/
+tools/instalador/
+tools/publico/
+tools/release.ps1
+.config/dotnet-tools.json
+.gitignore

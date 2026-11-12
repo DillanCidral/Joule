@@ -1,0 +1,24 @@
+# build
+bin/
+obj/
+dist/*.exe
+
+# gerado / baixavel de novo
+graphify-out/
+dotnet-install.ps1
+
+# zip de entrega do Claude Design (extraido em docs/design/v1)
+*.zip
+
+# capturas de scan (capturas/<pc>/): tem usuario, nome de aparelho e endereco Bluetooth, ficam so local
+battery-scan_*.json
+battery-scan_*.txt
+joulescan_*.json
+joulescan_*.txt
+
+# Instaladores e pacotes do Velopack (tools/release.ps1): binarios, ficam so neste PC
+releases/
+out/
+
+# Dados pessoais do dono (PCs, aparelhos, enderecos Bluetooth): so neste disco
+docs/privado/

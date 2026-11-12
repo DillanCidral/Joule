@@ -1,0 +1,49 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Coletor portatil, para rodar em OUTRAS maquinas.
+
+    Diferente de tools/diag (que e' harness de desenvolvimento), este exe e'
+    entregue: alguem baixa, roda com dois cliques e devolve dois arquivos. Por
+    isso e' self-contained: nao da' para pedir que instalem o .NET antes.
+
+    Reaproveita Core/Interop/Providers do app: a enumeracao HID, o leitor
+    passivo com as regras de seguranca e os providers atuais sao exatamente os
+    mesmos, sem copia.
+  -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <!-- Core/Autostart usa Application.ExecutablePath; nao ha janela nenhuma aqui. -->
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+
+    <AssemblyName>JouleScan</AssemblyName>
+    <RootNamespace>BatteryTray.Scan</RootNamespace>
+    <Product>Joule - coletor</Product>
+    <Version>1.0.0</Version>
+
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>true</SelfContained>
+    <PublishSingleFile>true</PublishSingleFile>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+    <PublishTrimmed>false</PublishTrimmed>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+    <DebugType>none</DebugType>
+
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="*.cs" />
+    <Compile Include="..\BatteryTray\Core\**\*.cs" />
+    <Compile Include="..\BatteryTray\Interop\**\*.cs" />
+    <Compile Include="..\BatteryTray\Providers\**\*.cs" />
+    <!-- Nome, Id e canal: AppPaths e Autostart dependem dele desde o nome Joule. -->
+    <Compile Include="..\BatteryTray\Ui\AppInfo.cs" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,947 @@
+<Window x:Class="BatteryTray.Ui.PanelWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ui="clr-namespace:BatteryTray.Ui"
+        Width="380" SizeToContent="Height"
+        WindowStyle="None" ResizeMode="NoResize" ShowInTaskbar="False" Topmost="True"
+        ShowActivated="True" Background="Transparent"
+        FontFamily="Segoe UI Variable Text, Segoe UI" FontSize="14"
+        TextOptions.TextFormattingMode="Display"
+        Foreground="{DynamicResource Text.Primary}">
+
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="Vis" />
+
+        <!-- Icone do design: caminho em 20x20, traco 1.5, pontas redondas. -->
+        <Style x:Key="Glyph" TargetType="Path">
+            <Setter Property="Width" Value="20" />
+            <Setter Property="Height" Value="20" />
+            <!-- Icones cheios (Icons.cs, Silhueta): pinta o Fill com a cor do Stroke. -->
+            <Setter Property="StrokeThickness" Value="0" />
+            <Setter Property="Fill" Value="{Binding Stroke, RelativeSource={RelativeSource Self}}" />
+            <Setter Property="StrokeStartLineCap" Value="Round" />
+            <Setter Property="StrokeEndLineCap" Value="Round" />
+            <Setter Property="StrokeLineJoin" Value="Round" />
+            <Setter Property="Stroke" Value="{DynamicResource Text.Primary}" />
+        </Style>
+
+        <Style x:Key="IconButton" TargetType="Button">
+            <Setter Property="Width" Value="32" />
+            <Setter Property="Height" Value="32" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Focusable" Value="False" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bg" ui:Motion.Hover="{DynamicResource Card.FillHover}" ui:Motion.Press="0.97" CornerRadius="4" Background="Transparent">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Bg" Property="Opacity" Value="0.7" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Barra de rolagem fina, sem setas nem trilho: so a alca arredondada. -->
+        <Style TargetType="ScrollBar">
+            <Setter Property="Width" Value="10" />
+            <Setter Property="MinWidth" Value="10" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ScrollBar">
+                        <Track x:Name="PART_Track" Orientation="Vertical" IsDirectionReversed="True">
+                            <Track.Thumb>
+                                <Thumb>
+                                    <Thumb.Template>
+                                        <ControlTemplate TargetType="Thumb">
+                                            <Grid Background="Transparent">
+                                                <Border x:Name="Bar" Width="4" CornerRadius="2" Margin="0,4" HorizontalAlignment="Center"
+                                                        Background="{DynamicResource Text.Tertiary}" Opacity="0.45" />
+                                            </Grid>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="Bar" Property="Width" Value="6" />
+                                                    <Setter TargetName="Bar" Property="CornerRadius" Value="3" />
+                                                    <Setter TargetName="Bar" Property="Opacity" Value="0.75" />
+                                                </Trigger>
+                                                <Trigger Property="IsDragging" Value="True">
+                                                    <Setter TargetName="Bar" Property="Width" Value="6" />
+                                                    <Setter TargetName="Bar" Property="Opacity" Value="0.9" />
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Thumb.Template>
+                                </Thumb>
+                            </Track.Thumb>
+                        </Track>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Linha clicavel sem cara de botao ("mostrar outros"). -->
+        <Style x:Key="FlatRow" TargetType="Button">
+            <Setter Property="Cursor" Value="Hand" />
+            <!-- Sem isto o texto herda o preto padrao do botao do Windows. -->
+            <Setter Property="Foreground" Value="{DynamicResource Text.Primary}" />
+            <Setter Property="Focusable" Value="False" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bg" ui:Motion.Hover="{DynamicResource Card.FillHover}" ui:Motion.Press="0.97" CornerRadius="6" Background="Transparent" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter />
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="AccentButton" TargetType="Button">
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Focusable" Value="False" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bg" CornerRadius="4" Height="32" Padding="16,0" Background="{DynamicResource Accent}">
+                            <ContentPresenter VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bg" Property="Opacity" Value="0.9" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="Caption" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="LineHeight" Value="16" />
+            <Setter Property="Foreground" Value="{DynamicResource Text.Tertiary}" />
+        </Style>
+
+        <!-- Interruptor 40x20 do design. -->
+        <Style x:Key="Switch" TargetType="ToggleButton">
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Focusable" Value="False" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="ui:Motion.Switch" Value="True" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Border x:Name="Track" Width="40" Height="20" CornerRadius="10" BorderThickness="1"
+                                Background="Transparent" BorderBrush="{DynamicResource Text.Secondary}">
+                            <!-- A bolinha desliza (Motion.Switch): a posicao vem do codigo, nao de um Setter. -->
+                            <Ellipse x:Name="Knob" Width="12" Height="12" Margin="3,0" HorizontalAlignment="Left"
+                                     Fill="{DynamicResource Text.Secondary}" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="Track" Property="Background" Value="{DynamicResource Accent}" />
+                                <Setter TargetName="Track" Property="BorderBrush" Value="{DynamicResource Accent}" />
+                                <Setter TargetName="Knob" Property="Fill" Value="{DynamicResource Accent.Foreground}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Uma opcao de controle segmentado (RadioButton com cara de aba). -->
+        <Style x:Key="Segment" TargetType="RadioButton">
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Focusable" Value="False" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="Foreground" Value="{DynamicResource Text.Secondary}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border x:Name="Bg" CornerRadius="4" Padding="{TemplateBinding Padding}" Background="Transparent">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Foreground" Value="{DynamicResource Text.Primary}" />
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="Bg" Property="Background" Value="{DynamicResource Segment.Selected}" />
+                                <Setter Property="Foreground" Value="{DynamicResource Text.Primary}" />
+                                <Setter Property="FontWeight" Value="SemiBold" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="SliderThumb" TargetType="Thumb">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Thumb">
+                        <Grid Width="20" Height="20" Background="Transparent">
+                            <Ellipse Fill="{DynamicResource Slider.Thumb}">
+                                <Ellipse.Effect>
+                                    <DropShadowEffect BlurRadius="3" ShadowDepth="1" Opacity="0.3" />
+                                </Ellipse.Effect>
+                            </Ellipse>
+                            <Ellipse Width="12" Height="12" Fill="{DynamicResource Accent}" />
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="AccentSlider" TargetType="Slider">
+            <Setter Property="Focusable" Value="False" />
+            <Setter Property="IsMoveToPointEnabled" Value="True" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Slider">
+                        <Grid Height="20">
+                            <Border Height="4" CornerRadius="2" Background="{DynamicResource Level.Track}" VerticalAlignment="Center" />
+                            <Track x:Name="PART_Track">
+                                <Track.DecreaseRepeatButton>
+                                    <RepeatButton Command="Slider.DecreaseLarge" Focusable="False">
+                                        <RepeatButton.Template>
+                                            <ControlTemplate TargetType="RepeatButton">
+                                                <Border Height="4" CornerRadius="2" Background="{DynamicResource Accent}" VerticalAlignment="Center" />
+                                            </ControlTemplate>
+                                        </RepeatButton.Template>
+                                    </RepeatButton>
+                                </Track.DecreaseRepeatButton>
+                                <Track.IncreaseRepeatButton>
+                                    <RepeatButton Command="Slider.IncreaseLarge" Focusable="False">
+                                        <RepeatButton.Template>
+                                            <ControlTemplate TargetType="RepeatButton">
+                                                <Border Background="Transparent" />
+                                            </ControlTemplate>
+                                        </RepeatButton.Template>
+                                    </RepeatButton>
+                                </Track.IncreaseRepeatButton>
+                                <Track.Thumb>
+                                    <Thumb Style="{StaticResource SliderThumb}" />
+                                </Track.Thumb>
+                            </Track>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="Group" TargetType="Border">
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Background" Value="{DynamicResource Card.Fill}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource Card.Stroke}" />
+        </Style>
+
+        <Style x:Key="GroupLabel" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Margin" Value="8,0,0,6" />
+            <Setter Property="Foreground" Value="{DynamicResource Text.Secondary}" />
+        </Style>
+
+        <Style x:Key="SegmentTrack" TargetType="Border">
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Padding" Value="2" />
+            <Setter Property="Background" Value="{DynamicResource Level.Track}" />
+        </Style>
+
+        <!-- Bolinha de cor (cor da alca do widget): Background e' a cor; anel quando escolhida. -->
+        <Style x:Key="Swatch" TargetType="RadioButton">
+            <Setter Property="Width" Value="36" />
+            <Setter Property="Height" Value="36" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Grid Background="Transparent">
+                            <Ellipse x:Name="Ring" Margin="1" Stroke="{DynamicResource Text.Primary}" StrokeThickness="2" Visibility="Hidden" />
+                            <Ellipse Margin="6" Fill="{TemplateBinding Background}" Stroke="#24000000" StrokeThickness="1" />
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="Ring" Property="Visibility" Value="Visible" />
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="Ring" Property="Visibility" Value="Visible" />
+                                <Setter TargetName="Ring" Property="StrokeDashArray" Value="2 1" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="Rule" TargetType="Border">
+            <Setter Property="Height" Value="1" />
+            <Setter Property="Background" Value="{DynamicResource Divider}" />
+        </Style>
+
+        <!-- Botao secundario (o mesmo das janelas de telas): "Procurar atualizacao". -->
+        <Style x:Key="OutlineButton" TargetType="Button">
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Focusable" Value="False" />
+            <Setter Property="Foreground" Value="{DynamicResource Text.Primary}" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="Height" Value="32" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bg" ui:Motion.Hover="{DynamicResource Card.FillHover}" ui:Motion.Press="0.97" CornerRadius="4" Padding="12,0" BorderThickness="1"
+                                BorderBrush="{DynamicResource Level.Track}" Background="{DynamicResource Button.Fill}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Foreground" Value="{DynamicResource Text.Tertiary}" />
+                                <Setter Property="Cursor" Value="Arrow" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Uma linha da tela Sobre: nome, para que serve, licenca e o link da pagina. -->
+        <DataTemplate x:Key="CreditRow" DataType="{x:Type ui:Credit}">
+            <StackPanel>
+                <Border x:Name="Line" Style="{StaticResource Rule}" />
+                <Button Style="{StaticResource FlatRow}" Padding="14,12" Tag="{Binding Url}" Click="OnCreditClick"
+                        AutomationProperties.Name="{Binding Name}">
+                    <DockPanel>
+                        <Viewbox DockPanel.Dock="Right" Width="14" Height="14" Margin="10,0,0,0">
+                            <Path Style="{StaticResource Glyph}" Data="{x:Static ui:Icons.External}" Stroke="{DynamicResource Text.Tertiary}" />
+                        </Viewbox>
+                        <TextBlock DockPanel.Dock="Right" Text="{Binding License}" FontSize="12" VerticalAlignment="Center"
+                                   Foreground="{DynamicResource Text.Secondary}" />
+                        <StackPanel>
+                            <TextBlock Text="{Binding Name}" />
+                            <TextBlock Style="{StaticResource Caption}" Text="{Binding Use}" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </DockPanel>
+                </Button>
+            </StackPanel>
+            <DataTemplate.Triggers>
+                <DataTrigger Binding="{Binding RelativeSource={RelativeSource Mode=PreviousData}}" Value="{x:Null}">
+                    <Setter TargetName="Line" Property="Visibility" Value="Collapsed" />
+                </DataTrigger>
+            </DataTemplate.Triggers>
+        </DataTemplate>
+
+        <!-- Uma linha da lista principal. -->
+        <DataTemplate x:Key="DeviceRow" DataType="{x:Type ui:RowItem}">
+            <Border x:Name="Card" ui:Motion.Hover="{DynamicResource Card.FillHover}" ui:Motion.Press="0.985" Margin="0,0,0,2" Padding="12,10,12,12" CornerRadius="6" BorderThickness="1"
+                    Background="{DynamicResource Card.Fill}" BorderBrush="{Binding CardStroke}"
+                    ToolTip="{Binding Tooltip}" ToolTipService.InitialShowDelay="500">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="32" />
+                        <ColumnDefinition Width="12" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <Border Width="32" Height="32" CornerRadius="6" Background="{DynamicResource Tile.Fill}" VerticalAlignment="Center">
+                        <Viewbox Width="18" Height="18">
+                            <Path Style="{StaticResource Glyph}" Data="{Binding Icon}" Stroke="{DynamicResource Text.Secondary}" />
+                        </Viewbox>
+                    </Border>
+
+                    <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                        <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" LineHeight="20" />
+                        <WrapPanel Margin="0,2,0,0">
+                            <TextBlock Style="{StaticResource Caption}" Text="{Binding Origin}" Margin="0,0,8,0" />
+                            <StackPanel Orientation="Horizontal" Margin="0,0,8,0" Visibility="{Binding ShowLive, Converter={StaticResource Vis}}">
+                                <Ellipse Width="6" Height="6" Fill="{DynamicResource Ember}" Margin="0,1,5,0" VerticalAlignment="Center">
+                                    <Ellipse.Effect><DropShadowEffect ShadowDepth="0" BlurRadius="6" Color="{DynamicResource Ember.Color}" Opacity="0.7" /></Ellipse.Effect>
+                                </Ellipse>
+                                <TextBlock Style="{StaticResource Caption}" Foreground="{DynamicResource Text.Secondary}" Text="{ui:Tr 'ao vivo', 'live'}" />
+                            </StackPanel>
+                            <TextBlock Style="{StaticResource Caption}" Foreground="{DynamicResource Text.Secondary}" Text="{ui:Tr 'lendo…', 'reading…'}" Margin="0,0,8,0"
+                                       Visibility="{Binding IsReading, Converter={StaticResource Vis}}" />
+                            <StackPanel Orientation="Horizontal" Margin="0,0,8,0" Visibility="{Binding ShowCharge, Converter={StaticResource Vis}}">
+                                <Viewbox Width="12" Height="12" Margin="0,1,3,0">
+                                    <Path Width="20" Height="20" Data="{x:Static ui:Icons.Bolt}" Fill="{DynamicResource Ember}">
+                                        <Path.Effect><DropShadowEffect ShadowDepth="0" BlurRadius="6" Color="{DynamicResource Ember.Color}" Opacity="0.7" /></Path.Effect>
+                                    </Path>
+                                </Viewbox>
+                                <TextBlock Style="{StaticResource Caption}" Text="{Binding ChargeText}" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,8,0" Visibility="{Binding ShowAge, Converter={StaticResource Vis}}">
+                                <Viewbox Width="12" Height="12" Margin="0,1,4,0" Visibility="{Binding IsStale, Converter={StaticResource Vis}}">
+                                    <Path Style="{StaticResource Glyph}" Data="{x:Static ui:Icons.Clock}" Stroke="{Binding AgeBrush}" />
+                                </Viewbox>
+                                <TextBlock Style="{StaticResource Caption}" Text="{Binding Age}" Foreground="{Binding AgeBrush}" />
+                            </StackPanel>
+                            <TextBlock Style="{StaticResource Caption}" Text="{Binding Note}" Foreground="{Binding NoteBrush}"
+                                       TextTrimming="CharacterEllipsis"
+                                       Visibility="{Binding ShowNote, Converter={StaticResource Vis}}" />
+                        </WrapPanel>
+                    </StackPanel>
+
+                    <!-- Valor: numero, faixa ou cabo. -->
+                    <Grid Grid.Column="3" VerticalAlignment="Center" Margin="12,0,0,0" Opacity="{Binding ValueOpacity}">
+                        <StackPanel Orientation="Horizontal" Visibility="{Binding IsPercent, Converter={StaticResource Vis}}">
+                            <TextBlock Text="{Binding Percent}" FontFamily="Segoe UI Variable Display, Segoe UI" FontSize="20" FontWeight="SemiBold"
+                                       Typography.NumeralAlignment="Tabular" Foreground="{Binding ValueBrush}" VerticalAlignment="Bottom" />
+                            <TextBlock Text="%" FontSize="13" FontWeight="SemiBold" Foreground="{Binding ValueBrush}" Margin="1,0,0,3" VerticalAlignment="Bottom" />
+                        </StackPanel>
+                        <Border Visibility="{Binding IsBand, Converter={StaticResource Vis}}" CornerRadius="999" Padding="10,3"
+                                Background="{DynamicResource Tile.Fill}">
+                            <TextBlock Text="{Binding BandLabel}" FontSize="13" FontWeight="SemiBold" Foreground="{Binding ValueBrush}" />
+                        </Border>
+                        <StackPanel Orientation="Horizontal" Visibility="{Binding IsCable, Converter={StaticResource Vis}}">
+                            <Viewbox Width="14" Height="14" Margin="0,0,5,0">
+                                <Path Style="{StaticResource Glyph}" Data="{x:Static ui:Icons.Plug}" Stroke="{DynamicResource Text.Secondary}" />
+                            </Viewbox>
+                            <TextBlock Text="{ui:Tr 'no cabo', 'wired'}" FontSize="13" Foreground="{DynamicResource Text.Secondary}" />
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- Barra continua (percentual) ou 3 blocos (faixa). -->
+                    <Border Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="2" Margin="0,8,0,0" Height="4" CornerRadius="2"
+                            Background="{DynamicResource Level.TrackFade}"
+                            Visibility="{Binding IsPercent, Converter={StaticResource Vis}}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="{Binding FillWidth}" />
+                                <ColumnDefinition Width="{Binding RestWidth}" />
+                            </Grid.ColumnDefinitions>
+                            <!-- Brasa: some na ponta e brilha; carregando, o reflexo vai e volta. -->
+                            <Border CornerRadius="2" Background="{Binding BarBrush}" Opacity="{Binding BarOpacity}" ClipToBounds="True">
+                                <Border.Effect><DropShadowEffect ShadowDepth="0" BlurRadius="6" Color="{DynamicResource Ember.Color}" Opacity="{Binding GlowOpacity}" /></Border.Effect>
+                                <Rectangle Visibility="{Binding ShowShimmer, Converter={StaticResource Vis}}">
+                                    <Rectangle.Fill>
+                                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                            <LinearGradientBrush.RelativeTransform><TranslateTransform X="-0.7" /></LinearGradientBrush.RelativeTransform>
+                                            <GradientStop Color="#00FFFBEA" Offset="0.3" />
+                                            <GradientStop Color="#E6FFFBEA" Offset="0.5" />
+                                            <GradientStop Color="#00FFFBEA" Offset="0.7" />
+                                        </LinearGradientBrush>
+                                    </Rectangle.Fill>
+                                    <Rectangle.Triggers>
+                                        <EventTrigger RoutedEvent="Loaded">
+                                            <BeginStoryboard>
+                                                <Storyboard RepeatBehavior="Forever" AutoReverse="True">
+                                                    <DoubleAnimation Storyboard.TargetProperty="(Shape.Fill).(Brush.RelativeTransform).(TranslateTransform.X)"
+                                                                     From="-0.7" To="0.7" Duration="0:0:1.6">
+                                                        <DoubleAnimation.EasingFunction><SineEase EasingMode="EaseInOut" /></DoubleAnimation.EasingFunction>
+                                                    </DoubleAnimation>
+                                                </Storyboard>
+                                            </BeginStoryboard>
+                                        </EventTrigger>
+                                    </Rectangle.Triggers>
+                                </Rectangle>
+                            </Border>
+                        </Grid>
+                    </Border>
+                    <UniformGrid Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="2" Margin="0,8,-4,0" Columns="3"
+                                 Visibility="{Binding IsBand, Converter={StaticResource Vis}}">
+                        <Border Height="6" CornerRadius="1" Margin="0,0,4,0" Background="{Binding Seg0}" />
+                        <Border Height="6" CornerRadius="1" Margin="0,0,4,0" Background="{Binding Seg1}" />
+                        <Border Height="6" CornerRadius="1" Margin="0,0,4,0" Background="{Binding Seg2}" />
+                    </UniformGrid>
+                </Grid>
+            </Border>
+        </DataTemplate>
+
+        <!-- Uma linha de "outros": icone tracejado, nome e motivo em ate 2 linhas. -->
+        <!-- Aparelho de marca nao testada, esperando licenca (mostra aprovada em 2026-11-12). -->
+        <DataTemplate x:Key="ConsentRow" DataType="{x:Type ui:ConsentItem}">
+            <Border Padding="14,12" Margin="0,0,0,4" CornerRadius="6" Background="{DynamicResource Card.Fill}" ToolTip="{Binding Name}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="32" />
+                        <ColumnDefinition Width="12" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Grid Width="32" Height="32">
+                        <Ellipse StrokeDashArray="3 2" StrokeThickness="1.5" Stroke="{DynamicResource Level.Track}" />
+                        <Viewbox Width="16" Height="16">
+                            <Path Style="{StaticResource Glyph}" Data="{Binding Icon}" Stroke="{DynamicResource Text.Tertiary}" />
+                        </Viewbox>
+                    </Grid>
+                    <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                        <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
+                        <TextBlock Style="{StaticResource Caption}" Text="{ui:Tr 'Precisa de permissão para ler a bateria', 'Needs permission to read the battery'}" TextWrapping="Wrap" />
+                    </StackPanel>
+                    <Button Grid.Column="3" Style="{StaticResource AccentButton}" Margin="10,0,0,0" VerticalAlignment="Center"
+                            Tag="{Binding Vid}" Click="OnAllowClick" AutomationProperties.Name="{ui:Tr 'Permitir', 'Allow'}">
+                        <TextBlock Text="{ui:Tr 'Permitir', 'Allow'}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource Accent.Foreground}" />
+                    </Button>
+                </Grid>
+            </Border>
+        </DataTemplate>
+
+        <DataTemplate x:Key="OtherRow" DataType="{x:Type ui:OtherItem}">
+            <Border x:Name="Bg" ui:Motion.Hover="{DynamicResource Card.FillHover}" ui:Motion.Press="0.985" Padding="12,8" CornerRadius="6" Background="Transparent" ToolTip="{Binding Reason}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="32" />
+                        <ColumnDefinition Width="12" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid Width="32" Height="32" VerticalAlignment="Top">
+                        <Rectangle RadiusX="6" RadiusY="6" StrokeDashArray="3 2" StrokeThickness="1" Stroke="{DynamicResource Level.Track}" />
+                        <Viewbox Width="18" Height="18">
+                            <Path Style="{StaticResource Glyph}" Data="{Binding Icon}" Stroke="{DynamicResource Text.Tertiary}" />
+                        </Viewbox>
+                    </Grid>
+                    <StackPanel Grid.Column="2">
+                        <TextBlock Text="{Binding Name}" Foreground="{DynamicResource Text.Secondary}" TextTrimming="CharacterEllipsis" />
+                        <TextBlock Style="{StaticResource Caption}" Text="{Binding Reason}" TextWrapping="Wrap" TextTrimming="CharacterEllipsis"
+                                   MaxHeight="32" Margin="0,2,0,0" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </DataTemplate>
+    </Window.Resources>
+
+    <Border x:Name="Root">
+        <Grid x:Name="Body">
+            <Grid.RenderTransform>
+                <TranslateTransform x:Name="Slide" />
+            </Grid.RenderTransform>
+
+            <!-- ============ Lista ============ -->
+            <DockPanel x:Name="MainView">
+                <!-- Cabecalho -->
+                <Grid DockPanel.Dock="Top" Margin="16,12,12,10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel VerticalAlignment="Center">
+                        <!-- Marca: Geist 600 so no nome, ponto amarelo em qualquer modo (.17em, como no tokens.css); violeta no canal de teste. -->
+                        <TextBlock FontFamily="pack://application:,,,/Fonts/#Geist" FontSize="15" FontWeight="SemiBold" LineHeight="20">
+                            <Run x:Name="TitleText" /><InlineUIContainer BaselineAlignment="Baseline">
+                                <Ellipse Width="2.6" Height="2.6" Margin="0.6,0,0,0.4" Fill="{DynamicResource Brand.Dot}" />
+                            </InlineUIContainer>
+                        </TextBlock>
+                        <TextBlock x:Name="SubtitleText" Style="{StaticResource Caption}" Visibility="Collapsed" />
+                    </StackPanel>
+
+                    <Border x:Name="ReadingPill" Grid.Column="1" Height="32" Padding="12,0" CornerRadius="4" Margin="0,0,4,0"
+                            Background="{DynamicResource Button.Fill}" Visibility="Collapsed">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <Viewbox Width="16" Height="16" Margin="0,0,6,0" RenderTransformOrigin="0.5,0.5">
+                                <Viewbox.RenderTransform>
+                                    <RotateTransform x:Name="Spin" />
+                                </Viewbox.RenderTransform>
+                                <Path Style="{StaticResource Glyph}" Data="{x:Static ui:Icons.Spinner}" Stroke="{DynamicResource Accent}" />
+                            </Viewbox>
+                            <TextBlock Text="{ui:Tr 'Lendo…', 'Reading…'}" FontSize="12" Foreground="{DynamicResource Text.Secondary}" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Border>
+                    <Button x:Name="RefreshButton" Grid.Column="1" Style="{StaticResource IconButton}" ToolTip="{ui:Tr 'Atualizar', 'Refresh'}" AutomationProperties.Name="{ui:Tr 'Atualizar', 'Refresh'}" Margin="0,0,4,0">
+                        <Viewbox Width="16" Height="16"><Path Style="{StaticResource Glyph}" Data="{x:Static ui:Icons.Refresh}" /></Viewbox>
+                    </Button>
+                    <!-- Destaque das boas-vindas (pulsa); nao pega clique. -->
+                    <Border x:Name="RefreshRing" Grid.Column="1" Width="32" Height="32" Margin="0,0,4,0" CornerRadius="4" BorderThickness="2"
+                            HorizontalAlignment="Right" IsHitTestVisible="False" Visibility="Collapsed" />
+                    <Button x:Name="SettingsButton" Grid.Column="2" Style="{StaticResource IconButton}" ToolTip="{ui:Tr 'Configurações', 'Settings'}" AutomationProperties.Name="{ui:Tr 'Configurações', 'Settings'}">
+                        <Viewbox Width="16" Height="16"><Path Style="{StaticResource Glyph}" Data="{x:Static ui:Icons.Sliders}" /></Viewbox>
+                    </Button>
+                </Grid>
+
+                <!-- Rodape -->
+                <Border DockPanel.Dock="Bottom" Margin="0,8,0,0" BorderThickness="0,1,0,0" BorderBrush="{DynamicResource Divider}" Padding="16,10,16,12">
+                    <DockPanel>
+                        <StackPanel x:Name="LiveLegend" DockPanel.Dock="Right" Orientation="Horizontal">
+                            <Ellipse Width="6" Height="6" Fill="{DynamicResource Accent}" Margin="0,1,5,0" VerticalAlignment="Center" />
+                            <TextBlock Style="{StaticResource Caption}" Text="{ui:Tr 'atualiza sozinho', 'updates by itself'}" />
+                        </StackPanel>
+                        <TextBlock x:Name="FooterText" Style="{StaticResource Caption}" />
+                    </DockPanel>
+                </Border>
+
+                <ScrollViewer x:Name="Scroller" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                    <StackPanel>
+                        <!-- Vazio -->
+                        <StackPanel x:Name="EmptyView" Margin="32,20" HorizontalAlignment="Center" Visibility="Collapsed">
+                            <Border Width="48" Height="48" CornerRadius="10" Background="{DynamicResource Tile.Fill}" Margin="0,0,0,12">
+                                <Viewbox Width="26" Height="26">
+                                    <Path x:Name="EmptyIcon" Style="{StaticResource Glyph}" Stroke="{DynamicResource Text.Secondary}" />
+                                </Viewbox>
+                            </Border>
+                            <TextBlock x:Name="EmptyTitle" FontSize="16" FontWeight="SemiBold" TextAlignment="Center" />
+                            <TextBlock x:Name="EmptyBody" FontSize="13" LineHeight="18" Margin="0,6,0,0" TextAlignment="Center" TextWrapping="Wrap"
+                                       Foreground="{DynamicResource Text.Secondary}" />
+                            <Button x:Name="EmptyRefresh" Style="{StaticResource AccentButton}" HorizontalAlignment="Center" Margin="0,16,0,0">
+                                <StackPanel Orientation="Horizontal">
+                                    <Viewbox Width="14" Height="14" Margin="0,0,6,0">
+                                        <Path Style="{StaticResource Glyph}" Data="{x:Static ui:Icons.Refresh}" Stroke="{DynamicResource Accent.Foreground}" />
+                                    </Viewbox>
+                                    <TextBlock Text="{ui:Tr 'Atualizar', 'Refresh'}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource Accent.Foreground}" />
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+
+                        <ItemsControl x:Name="ConsentRows" Margin="8,0" ItemTemplate="{StaticResource ConsentRow}" />
+                        <ItemsControl x:Name="Rows" Margin="8,0" ItemTemplate="{StaticResource DeviceRow}" />
+
+                        <StackPanel x:Name="OthersBlock" Margin="8,8,8,0">
+                            <Grid>
+                            <Button x:Name="OthersToggle" AutomationProperties.Name="{ui:Tr 'Outros', 'Others'}" Style="{StaticResource FlatRow}" Height="36" Padding="12,0">
+                                <DockPanel VerticalAlignment="Center">
+                                    <Viewbox DockPanel.Dock="Right" Width="14" Height="14" RenderTransformOrigin="0.5,0.5">
+                                        <Viewbox.RenderTransform>
+                                            <RotateTransform x:Name="ChevronTurn" />
+                                        </Viewbox.RenderTransform>
+                                        <Path Style="{StaticResource Glyph}" Data="{x:Static ui:Icons.Chevron}" Stroke="{DynamicResource Text.Secondary}" />
+                                    </Viewbox>
+                                    <TextBlock x:Name="OthersLabel" FontSize="13" Foreground="{DynamicResource Text.Secondary}" />
+                                </DockPanel>
+                            </Button>
+                            <Border x:Name="OthersRing" CornerRadius="6" BorderThickness="2" IsHitTestVisible="False" Visibility="Collapsed" />
+                            </Grid>
+                            <ItemsControl x:Name="OtherRows" ItemTemplate="{StaticResource OtherRow}" Margin="0,2,0,0" />
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </DockPanel>
+            <!-- ============ Configuracoes ============ -->
+            <DockPanel x:Name="SettingsView" Visibility="Collapsed">
+                <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="8,12,12,12">
+                    <Button x:Name="BackButton" Style="{StaticResource IconButton}" ToolTip="{ui:Tr 'Voltar', 'Back'}" AutomationProperties.Name="{ui:Tr 'Voltar', 'Back'}">
+                        <Viewbox Width="16" Height="16"><Path Style="{StaticResource Glyph}" Data="{x:Static ui:Icons.Back}" /></Viewbox>
+                    </Button>
+                    <TextBlock Text="{ui:Tr 'Configurações', 'Settings'}" FontWeight="SemiBold" VerticalAlignment="Center" Margin="8,0,0,0" />
+                </StackPanel>
+
+                <Border DockPanel.Dock="Bottom" BorderThickness="0,1,0,0" BorderBrush="{DynamicResource Divider}" Padding="16,10,16,12">
+                    <TextBlock x:Name="AboutText" Style="{StaticResource Caption}" />
+                </Border>
+
+                <ScrollViewer x:Name="SettingsScroller" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                    <StackPanel Margin="8,0,8,8">
+                        <TextBlock Style="{StaticResource GroupLabel}" Text="{ui:Tr 'Avisos', 'Notifications'}" />
+                        <Border Style="{StaticResource Group}">
+                            <StackPanel>
+                                <!-- Onde avisar (pagina aprovada em 2026-11-10): escolher mostra um exemplo na hora. -->
+                                <StackPanel Margin="14,12">
+                                    <TextBlock Text="{ui:Tr 'Conectar e desconectar', 'Connect and disconnect'}" />
+                                    <TextBlock Style="{StaticResource Caption}" Text="{ui:Tr 'Aparelho e bateria quando ele entra ou sai', 'Device and battery when it connects or disconnects'}" />
+                                    <Border Style="{StaticResource SegmentTrack}" Margin="0,10,0,0">
+                                        <UniformGrid Columns="3">
+                                            <RadioButton x:Name="PlaceWidget" GroupName="Place" Style="{StaticResource Segment}" Padding="4,6" Content="{ui:Tr 'No widget', 'On the widget'}" />
+                                            <RadioButton x:Name="PlaceWindows" GroupName="Place" Style="{StaticResource Segment}" Padding="4,6" Content="{ui:Tr 'Do Windows', 'Windows'}" />
+                                            <RadioButton x:Name="PlaceOff" GroupName="Place" Style="{StaticResource Segment}" Padding="4,6" Content="{ui:Tr 'Desligado', 'Off'}" />
+                                        </UniformGrid>
+                                    </Border>
+                                </StackPanel>
+                                <Border Style="{StaticResource Rule}" />
+                                <DockPanel x:Name="SoundRow" Margin="14,12">
+                                    <ToggleButton x:Name="SoundSwitch" DockPanel.Dock="Right" Style="{StaticResource Switch}" />
+                                    <StackPanel>
+                                        <TextBlock Text="{ui:Tr 'Tocar som', 'Play sound'}" />
+                                        <TextBlock Style="{StaticResource Caption}" Text="{ui:Tr 'Só quando a bateria é lida, e na bateria baixa', 'Only when the battery is read, and on low battery'}" />
+                                    </StackPanel>
+                                </DockPanel>
+                                <Border Style="{StaticResource Rule}" />
+                                <DockPanel Margin="14,12">
+                                    <ToggleButton x:Name="AlertsSwitch" DockPanel.Dock="Right" Style="{StaticResource Switch}" />
+                                    <StackPanel>
+                                        <TextBlock Text="{ui:Tr 'Avisar com bateria baixa', 'Warn on low battery'}" />
+                                        <TextBlock Style="{StaticResource Caption}" Text="{ui:Tr 'No mesmo lugar dos avisos, uma vez por aparelho', 'In the same place as notifications, once per device'}" />
+                                    </StackPanel>
+                                </DockPanel>
+                                <Border Style="{StaticResource Rule}" />
+                                <StackPanel Margin="14,12,14,16">
+                                    <DockPanel>
+                                        <TextBlock x:Name="ThresholdValue" DockPanel.Dock="Right" FontWeight="SemiBold" Typography.NumeralAlignment="Tabular" VerticalAlignment="Center" />
+                                        <StackPanel>
+                                            <TextBlock Text="{ui:Tr 'Limite de bateria baixa', 'Low battery threshold'}" />
+                                            <TextBlock Style="{StaticResource Caption}" Text="{ui:Tr 'Abaixo disso a linha fica na cor de alerta', 'Below this, the row turns to the alert color'}" />
+                                        </StackPanel>
+                                    </DockPanel>
+                                    <Slider x:Name="ThresholdSlider" Style="{StaticResource AccentSlider}" Margin="0,12,0,0"
+                                            Minimum="1" Maximum="99" SmallChange="1" LargeChange="5" IsSnapToTickEnabled="True" TickFrequency="1" />
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <TextBlock Style="{StaticResource GroupLabel}" Text="{ui:Tr 'Geral', 'General'}" Margin="8,16,0,6" />
+                        <Border Style="{StaticResource Group}">
+                            <StackPanel>
+                                <DockPanel Margin="14,12">
+                                    <ToggleButton x:Name="AutostartSwitch" DockPanel.Dock="Right" Style="{StaticResource Switch}" />
+                                    <TextBlock Text="{ui:Tr 'Iniciar com o Windows', 'Start with Windows'}" VerticalAlignment="Center" />
+                                </DockPanel>
+                                <Border Style="{StaticResource Rule}" />
+                                <!-- Idioma (2026-11-12): cada lingua escrita nela mesma; vale ao reabrir. -->
+                                <StackPanel Margin="14,12">
+                                    <TextBlock Text="{ui:Tr 'Idioma', 'Language'}" />
+                                    <Border Style="{StaticResource SegmentTrack}" Margin="0,10,0,0">
+                                        <UniformGrid Columns="3">
+                                            <RadioButton x:Name="LanguageAuto" GroupName="Language" Style="{StaticResource Segment}" Padding="4,6" Content="{ui:Tr 'Do Windows', 'Windows'}" />
+                                            <RadioButton x:Name="LanguagePt" GroupName="Language" Style="{StaticResource Segment}" Padding="4,6" Content="Português" />
+                                            <RadioButton x:Name="LanguageEn" GroupName="Language" Style="{StaticResource Segment}" Padding="4,6" Content="English" />
+                                        </UniformGrid>
+                                    </Border>
+                                    <DockPanel x:Name="LanguageRestart" Margin="0,10,0,0" Visibility="Collapsed">
+                                        <Button x:Name="RestartButton" DockPanel.Dock="Right" Style="{StaticResource OutlineButton}" Margin="10,0,0,0" VerticalAlignment="Center">
+                                            <TextBlock Text="{ui:Tr 'Reabrir agora', 'Reopen now'}" />
+                                        </Button>
+                                        <TextBlock Style="{StaticResource Caption}" TextWrapping="Wrap" VerticalAlignment="Center" Text="{ui:Tr 'Vale quando o Joule abrir de novo.', 'Takes effect when Joule opens again.'}" />
+                                    </DockPanel>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <TextBlock Style="{StaticResource GroupLabel}" Text="{ui:Tr 'Aparência', 'Appearance'}" Margin="8,16,0,6" />
+                        <Border Style="{StaticResource Group}" Padding="14,12">
+                            <StackPanel>
+                                <Border Style="{StaticResource SegmentTrack}">
+                                    <UniformGrid Columns="3">
+                                        <RadioButton x:Name="AppearanceGlass" GroupName="Appearance" Style="{StaticResource Segment}" Padding="4,6" Content="{ui:Tr 'Vidro tingido', 'Tinted glass'}" />
+                                        <RadioButton x:Name="AppearanceSystem" GroupName="Appearance" Style="{StaticResource Segment}" Padding="4,6" Content="{ui:Tr 'Sistema', 'System'}" />
+                                        <RadioButton x:Name="AppearanceSolid" GroupName="Appearance" Style="{StaticResource Segment}" Padding="4,6" Content="{ui:Tr 'Sólido', 'Solid'}" />
+                                    </UniformGrid>
+                                </Border>
+                                <!-- Desfoque: so com "Efeitos de transparencia" ligado; desligado, apagado com o motivo e o atalho. -->
+                                <StackPanel x:Name="BlurBlock" Margin="0,12,0,0">
+                                    <DockPanel>
+                                        <ToggleButton x:Name="BlurSwitch" DockPanel.Dock="Right" Style="{StaticResource Switch}" />
+                                        <StackPanel>
+                                            <TextBlock x:Name="BlurTitle" Text="{ui:Tr 'Desfocar o fundo', 'Blur the background'}" />
+                                            <TextBlock x:Name="BlurCaption" Style="{StaticResource Caption}" TextWrapping="Wrap" />
+                                        </StackPanel>
+                                    </DockPanel>
+                                    <Button x:Name="ColorsButton" Style="{StaticResource OutlineButton}" HorizontalAlignment="Left" Margin="0,10,0,0">
+                                        <TextBlock Text="{ui:Tr 'Abrir as cores do Windows', 'Open Windows color settings'}" />
+                                    </Button>
+                                </StackPanel>
+                                <StackPanel x:Name="OpacityBlock" Margin="0,12,0,0">
+                                    <DockPanel>
+                                        <TextBlock x:Name="OpacityValue" DockPanel.Dock="Right" FontWeight="SemiBold" Typography.NumeralAlignment="Tabular" />
+                                        <TextBlock Text="{ui:Tr 'Opacidade da película', 'Tint opacity'}" />
+                                    </DockPanel>
+                                    <Slider x:Name="OpacitySlider" Style="{StaticResource AccentSlider}" Margin="0,8,0,0"
+                                            Minimum="20" Maximum="95" SmallChange="1" LargeChange="5" IsSnapToTickEnabled="True" TickFrequency="1" />
+                                </StackPanel>
+                                <TextBlock x:Name="AppearanceNote" Style="{StaticResource Caption}" TextWrapping="Wrap" Margin="0,10,0,0" />
+                            </StackPanel>
+                        </Border>
+
+                        <TextBlock Style="{StaticResource GroupLabel}" Text="{ui:Tr 'Widget de borda', 'Edge widget'}" Margin="8,16,0,6" />
+                        <Border Style="{StaticResource Group}">
+                            <StackPanel>
+                                <DockPanel Margin="14,12">
+                                    <ToggleButton x:Name="WidgetSwitch" DockPanel.Dock="Right" Style="{StaticResource Switch}" />
+                                    <StackPanel>
+                                        <TextBlock Text="{ui:Tr 'Mostrar widget', 'Show widget'}" />
+                                        <TextBlock Style="{StaticResource Caption}" Text="{ui:Tr 'Arraste o widget para qualquer borda, em qualquer tela', 'Drag the widget to any edge, on any screen'}" />
+                                    </StackPanel>
+                                </DockPanel>
+                                <Border Style="{StaticResource Rule}" />
+                                <DockPanel Margin="14,10">
+                                    <Border DockPanel.Dock="Right" Style="{StaticResource SegmentTrack}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <RadioButton x:Name="SideLeft" GroupName="Side" Style="{StaticResource Segment}" Padding="12,5" Content="{ui:Tr 'Esquerda', 'Left'}" />
+                                            <RadioButton x:Name="SideRight" GroupName="Side" Style="{StaticResource Segment}" Padding="12,5" Content="{ui:Tr 'Direita', 'Right'}" />
+                                        </StackPanel>
+                                    </Border>
+                                    <TextBlock Text="{ui:Tr 'Lado', 'Side'}" VerticalAlignment="Center" />
+                                </DockPanel>
+                                <Border Style="{StaticResource Rule}" />
+                                <DockPanel Margin="14,10">
+                                    <Border DockPanel.Dock="Right" Style="{StaticResource SegmentTrack}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <RadioButton x:Name="ShowAlways" GroupName="Show" Style="{StaticResource Segment}" Padding="10,5" Content="{ui:Tr 'Sempre', 'Always'}" />
+                                            <RadioButton x:Name="ShowAutoHide" GroupName="Show" Style="{StaticResource Segment}" Padding="10,5" Content="{ui:Tr 'Esconder sozinho', 'Auto-hide'}" />
+                                        </StackPanel>
+                                    </Border>
+                                    <TextBlock Text="{ui:Tr 'Exibição', 'Display'}" VerticalAlignment="Center" />
+                                </DockPanel>
+                                <Border Style="{StaticResource Rule}" />
+                                <StackPanel x:Name="HandleColorBlock" Margin="14,10,14,10">
+                                    <DockPanel>
+                                        <TextBlock x:Name="HandleColorName" DockPanel.Dock="Right" Style="{StaticResource Caption}" VerticalAlignment="Center" />
+                                        <TextBlock Text="{ui:Tr 'Cor da alça', 'Handle color'}" />
+                                    </DockPanel>
+                                    <StackPanel Orientation="Horizontal" Margin="-6,6,0,0">
+                                        <RadioButton x:Name="HandleJoule" GroupName="Handle" Style="{StaticResource Swatch}" Background="{DynamicResource Accent}" ToolTip="{ui:Tr 'Joule (padrão)', 'Joule (default)'}" AutomationProperties.Name="{ui:Tr 'Joule (padrão)', 'Joule (default)'}" />
+                                        <RadioButton x:Name="HandleWindows" GroupName="Handle" Style="{StaticResource Swatch}" Background="{DynamicResource Accent.Windows}" ToolTip="{ui:Tr 'Tema do Windows', 'Windows theme'}" AutomationProperties.Name="{ui:Tr 'Tema do Windows', 'Windows theme'}" />
+                                        <RadioButton x:Name="HandleWhite" GroupName="Handle" Style="{StaticResource Swatch}" Background="#FFFFFF" ToolTip="{ui:Tr 'Branco', 'White'}" AutomationProperties.Name="{ui:Tr 'Branco', 'White'}" />
+                                        <RadioButton x:Name="HandleNeutral" GroupName="Handle" Style="{StaticResource Swatch}" Background="#8A8A8A" ToolTip="{ui:Tr 'Neutro', 'Neutral'}" AutomationProperties.Name="{ui:Tr 'Neutro', 'Neutral'}" />
+                                        <RadioButton x:Name="HandleCustom" GroupName="Handle" Style="{StaticResource Swatch}" ToolTip="{ui:Tr 'Cor própria', 'Custom color'}" AutomationProperties.Name="{ui:Tr 'Cor própria', 'Custom color'}">
+                                            <RadioButton.Background>
+                                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                                    <GradientStop Color="#FF5C5C" Offset="0" />
+                                                    <GradientStop Color="#FFD23F" Offset="0.3" />
+                                                    <GradientStop Color="#6EE7A0" Offset="0.5" />
+                                                    <GradientStop Color="#4CC2FF" Offset="0.75" />
+                                                    <GradientStop Color="#C084FC" Offset="1" />
+                                                </LinearGradientBrush>
+                                            </RadioButton.Background>
+                                        </RadioButton>
+                                    </StackPanel>
+                                    <!-- Cores da "Cor propria": o valor salvo e' o proprio #RRGGBB. -->
+                                    <StackPanel x:Name="HandlePalette" Orientation="Horizontal" Margin="-5,2,0,0">
+                                        <RadioButton GroupName="HandlePalette" Style="{StaticResource Swatch}" Width="31" Height="31" Background="#FF5C5C" AutomationProperties.Name="{ui:Tr 'Vermelho', 'Red'}" />
+                                        <RadioButton GroupName="HandlePalette" Style="{StaticResource Swatch}" Width="31" Height="31" Background="#FF8A3D" AutomationProperties.Name="{ui:Tr 'Laranja', 'Orange'}" />
+                                        <RadioButton GroupName="HandlePalette" Style="{StaticResource Swatch}" Width="31" Height="31" Background="#FFD23F" AutomationProperties.Name="{ui:Tr 'Amarelo', 'Yellow'}" />
+                                        <RadioButton GroupName="HandlePalette" Style="{StaticResource Swatch}" Width="31" Height="31" Background="#6EE7A0" AutomationProperties.Name="{ui:Tr 'Verde', 'Green'}" />
+                                        <RadioButton GroupName="HandlePalette" Style="{StaticResource Swatch}" Width="31" Height="31" Background="#2DD4BF" AutomationProperties.Name="{ui:Tr 'Verde-água', 'Teal'}" />
+                                        <RadioButton GroupName="HandlePalette" Style="{StaticResource Swatch}" Width="31" Height="31" Background="#4CC2FF" AutomationProperties.Name="{ui:Tr 'Azul', 'Blue'}" />
+                                        <RadioButton GroupName="HandlePalette" Style="{StaticResource Swatch}" Width="31" Height="31" Background="#7C8CFF" AutomationProperties.Name="{ui:Tr 'Anil', 'Indigo'}" />
+                                        <RadioButton GroupName="HandlePalette" Style="{StaticResource Swatch}" Width="31" Height="31" Background="#C084FC" AutomationProperties.Name="{ui:Tr 'Violeta', 'Violet'}" />
+                                        <RadioButton GroupName="HandlePalette" Style="{StaticResource Swatch}" Width="31" Height="31" Background="#F472B6" AutomationProperties.Name="{ui:Tr 'Rosa', 'Pink'}" />
+                                        <RadioButton GroupName="HandlePalette" Style="{StaticResource Swatch}" Width="31" Height="31" Background="#E6E6E6" AutomationProperties.Name="{ui:Tr 'Cinza claro', 'Light gray'}" />
+                                    </StackPanel>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Camada de seguranca (mostra aprovada em 2026-11-12): corta toda pergunta ao aparelho. -->
+                        <TextBlock Style="{StaticResource GroupLabel}" Text="{ui:Tr 'Leitura', 'Reading'}" Margin="8,16,0,6" />
+                        <Border Style="{StaticResource Group}">
+                            <DockPanel Margin="14,12">
+                                <ToggleButton x:Name="ListenOnlySwitch" DockPanel.Dock="Right" Style="{StaticResource Switch}" AutomationProperties.Name="{ui:Tr 'Só escutar', 'Listen only'}" />
+                                <StackPanel>
+                                    <TextBlock Text="{ui:Tr 'Só escutar', 'Listen only'}" />
+                                    <TextBlock Style="{StaticResource Caption}" TextWrapping="Wrap" Text="{ui:Tr 'Nenhuma pergunta é enviada aos aparelhos. Marcas que dependem de pergunta ficam sem bateria.', 'No question is sent to devices. Brands that depend on a question show no battery.'}" />
+                                </StackPanel>
+                            </DockPanel>
+                        </Border>
+
+                        <TextBlock Style="{StaticResource GroupLabel}" Text="{ui:Tr 'Avançado', 'Advanced'}" Margin="8,16,0,6" />
+                        <Button x:Name="SendDeviceButton" Style="{StaticResource FlatRow}" Padding="0">
+                            <Border Style="{StaticResource Group}" Padding="14,12">
+                                <DockPanel>
+                                    <Viewbox DockPanel.Dock="Right" Width="14" Height="14">
+                                        <Path Style="{StaticResource Glyph}" Data="{x:Static ui:Icons.External}" Stroke="{DynamicResource Text.Tertiary}" />
+                                    </Viewbox>
+                                    <StackPanel>
+                                        <TextBlock Text="{ui:Tr 'Mandar meu aparelho', 'Send my device'}" />
+                                        <TextBlock Style="{StaticResource Caption}" Text="{ui:Tr 'Algum aparelho não aparece? Mande os dados dele', 'A device is missing? Send its details'}" />
+                                    </StackPanel>
+                                </DockPanel>
+                            </Border>
+                        </Button>
+                        <Button x:Name="DataFolderButton" Style="{StaticResource FlatRow}" Padding="0" Margin="0,2,0,0">
+                            <Border Style="{StaticResource Group}" Padding="14,12">
+                                <DockPanel>
+                                    <Viewbox DockPanel.Dock="Left" Width="18" Height="18" Margin="0,0,12,0">
+                                        <Path Style="{StaticResource Glyph}" Data="{x:Static ui:Icons.Folder}" Stroke="{DynamicResource Text.Secondary}" />
+                                    </Viewbox>
+                                    <Viewbox DockPanel.Dock="Right" Width="14" Height="14">
+                                        <Path Style="{StaticResource Glyph}" Data="{x:Static ui:Icons.External}" Stroke="{DynamicResource Text.Tertiary}" />
+                                    </Viewbox>
+                                    <StackPanel>
+                                        <TextBlock Text="{ui:Tr 'Abrir pasta de dados', 'Open data folder'}" />
+                                        <TextBlock Style="{StaticResource Caption}" Text="{ui:Tr 'Log e cache das leituras', 'Log and reading cache'}" />
+                                    </StackPanel>
+                                </DockPanel>
+                            </Border>
+                        </Button>
+
+                        <Button x:Name="AboutButton" Style="{StaticResource FlatRow}" Padding="0" Margin="0,2,0,0">
+                            <Border Style="{StaticResource Group}" Padding="14,12">
+                                <DockPanel>
+                                    <Viewbox DockPanel.Dock="Left" Width="18" Height="18" Margin="0,0,12,0">
+                                        <Path Style="{StaticResource Glyph}" Data="{x:Static ui:Icons.Info}" Stroke="{DynamicResource Text.Secondary}" />
+                                    </Viewbox>
+                                    <Viewbox DockPanel.Dock="Right" Width="14" Height="14">
+                                        <Path Style="{StaticResource Glyph}" Data="{x:Static ui:Icons.ChevronRight}" Stroke="{DynamicResource Text.Tertiary}" />
+                                    </Viewbox>
+                                    <StackPanel>
+                                        <TextBlock Text="{ui:Tr 'Sobre e licenças', 'About and licenses'}" />
+                                        <TextBlock Style="{StaticResource Caption}" Text="{ui:Tr 'Código aberto e os projetos de que o Joule depende', 'Open source and the projects Joule relies on'}" />
+                                    </StackPanel>
+                                </DockPanel>
+                            </Border>
+                        </Button>
+                    </StackPanel>
+                </ScrollViewer>
+            </DockPanel>
+
+            <!-- ============ Sobre (aberta pelas Configuracoes) ============ -->
+            <DockPanel x:Name="AboutView" Visibility="Collapsed">
+                <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="8,12,12,12">
+                    <Button x:Name="AboutBackButton" Style="{StaticResource IconButton}" ToolTip="{ui:Tr 'Voltar', 'Back'}" AutomationProperties.Name="{ui:Tr 'Voltar', 'Back'}">
+                        <Viewbox Width="16" Height="16"><Path Style="{StaticResource Glyph}" Data="{x:Static ui:Icons.Back}" /></Viewbox>
+                    </Button>
+                    <TextBlock Text="{ui:Tr 'Sobre', 'About'}" FontWeight="SemiBold" VerticalAlignment="Center" Margin="8,0,0,0" />
+                </StackPanel>
+
+                <ScrollViewer x:Name="AboutScroller" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                    <StackPanel Margin="8,0,8,8">
+                        <Border Style="{StaticResource Group}">
+                            <StackPanel>
+                                <DockPanel Margin="14,12">
+                                    <Button x:Name="UpdateButton" DockPanel.Dock="Right" Style="{StaticResource OutlineButton}" VerticalAlignment="Center" Margin="10,0,0,0">
+                                        <TextBlock x:Name="UpdateText" Text="{ui:Tr 'Procurar atualização', 'Check for updates'}" />
+                                    </Button>
+                                    <StackPanel VerticalAlignment="Center">
+                                        <TextBlock x:Name="AboutVersion" FontWeight="SemiBold" />
+                                        <TextBlock Style="{StaticResource Caption}" Text="{ui:Tr 'Código aberto, licença AGPL-3.0', 'Open source, AGPL-3.0 license'}" />
+                                    </StackPanel>
+                                </DockPanel>
+                                <Border Style="{StaticResource Rule}" />
+                                <ContentControl x:Name="SourceRow" ContentTemplate="{StaticResource CreditRow}" />
+                            </StackPanel>
+                        </Border>
+
+                        <Button x:Name="OnboardingButton" Style="{StaticResource FlatRow}" Padding="0" Margin="0,2,0,0">
+                            <Border Style="{StaticResource Group}" Padding="14,12">
+                                <DockPanel>
+                                    <Viewbox DockPanel.Dock="Right" Width="14" Height="14">
+                                        <Path Style="{StaticResource Glyph}" Data="{x:Static ui:Icons.External}" Stroke="{DynamicResource Text.Tertiary}" />
+                                    </Viewbox>
+                                    <StackPanel>
+                                        <TextBlock Text="{ui:Tr 'Rever a apresentação', 'Replay the introduction'}" />
+                                        <TextBlock Style="{StaticResource Caption}" Text="{ui:Tr 'As telas de boas-vindas, mostrando o painel e o widget', 'The welcome screens, showing the panel and the widget'}" />
+                                    </StackPanel>
+                                </DockPanel>
+                            </Border>
+                        </Button>
+
+                        <TextBlock Style="{StaticResource GroupLabel}" Text="{ui:Tr 'Componentes', 'Components'}" Margin="8,16,0,6" />
+                        <Border Style="{StaticResource Group}">
+                            <ItemsControl x:Name="ComponentsList" ItemTemplate="{StaticResource CreditRow}" />
+                        </Border>
+
+                        <TextBlock Style="{StaticResource GroupLabel}" Text="{ui:Tr 'Tabelas de modelos', 'Model tables'}" Margin="8,16,0,6" />
+                        <Border Style="{StaticResource Group}">
+                            <ItemsControl x:Name="TablesList" ItemTemplate="{StaticResource CreditRow}" />
+                        </Border>
+
+                        <TextBlock Style="{StaticResource GroupLabel}" Text="{ui:Tr 'Referências de protocolo', 'Protocol references'}" Margin="8,16,0,6" />
+                        <Border Style="{StaticResource Group}">
+                            <ItemsControl x:Name="ProtocolsList" ItemTemplate="{StaticResource CreditRow}" />
+                        </Border>
+
+                        <Button x:Name="LicensesButton" Style="{StaticResource FlatRow}" Padding="0" Margin="0,16,0,0">
+                            <Border Style="{StaticResource Group}" Padding="14,12">
+                                <DockPanel>
+                                    <Viewbox DockPanel.Dock="Right" Width="14" Height="14">
+                                        <Path Style="{StaticResource Glyph}" Data="{x:Static ui:Icons.External}" Stroke="{DynamicResource Text.Tertiary}" />
+                                    </Viewbox>
+                                    <StackPanel>
+                                        <TextBlock Text="{ui:Tr 'Ler as licenças completas', 'Read the full licenses'}" />
+                                        <TextBlock Style="{StaticResource Caption}" Text="{ui:Tr 'Abre o arquivo que vem instalado com o app', 'Opens the file installed with the app'}" />
+                                    </StackPanel>
+                                </DockPanel>
+                            </Border>
+                        </Button>
+                    </StackPanel>
+                </ScrollViewer>
+            </DockPanel>
+        </Grid>
+    </Border>
+</Window>

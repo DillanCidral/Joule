@@ -1,0 +1,209 @@
+<Window x:Class="BatteryTray.Ui.WidgetWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ui="clr-namespace:BatteryTray.Ui"
+        SizeToContent="WidthAndHeight"
+        WindowStyle="None" AllowsTransparency="True" ResizeMode="NoResize"
+        ShowInTaskbar="False" Topmost="True" ShowActivated="False" Background="Transparent"
+        FontFamily="Segoe UI Variable Text, Segoe UI" FontSize="13"
+        TextOptions.TextFormattingMode="Display"
+        Foreground="{DynamicResource Text.Primary}">
+
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="Vis" />
+
+        <Style x:Key="Glyph" TargetType="Path">
+            <Setter Property="Width" Value="20" />
+            <Setter Property="Height" Value="20" />
+            <!-- Icones cheios (Icons.cs, Silhueta): pinta o Fill com a cor do Stroke. -->
+            <Setter Property="StrokeThickness" Value="0" />
+            <Setter Property="Fill" Value="{Binding Stroke, RelativeSource={RelativeSource Self}}" />
+            <Setter Property="StrokeStartLineCap" Value="Round" />
+            <Setter Property="StrokeEndLineCap" Value="Round" />
+            <Setter Property="StrokeLineJoin" Value="Round" />
+            <Setter Property="Stroke" Value="{DynamicResource Text.Primary}" />
+        </Style>
+
+        <!-- Anel de 32 px: trilho + arco. Continuo = percentual; 3 arcos = faixa; tracejado = cabo. -->
+        <DataTemplate x:Key="Ring" DataType="{x:Type ui:RingItem}">
+            <Grid x:Name="RingRoot" Width="32" Height="32" Opacity="{Binding RingOpacity}" RenderTransformOrigin="0.5,0.5">
+                <Grid.RenderTransform><ScaleTransform /></Grid.RenderTransform>
+                <Ellipse Width="29" Height="29" StrokeThickness="3" Stroke="{DynamicResource Level.Track}"
+                         StrokeDashArray="{Binding TrackDash}" RenderTransformOrigin="0.5,0.5"
+                         Visibility="{Binding ShowTrackEllipse, Converter={StaticResource Vis}}">
+                    <Ellipse.RenderTransform><RotateTransform Angle="-90" /></Ellipse.RenderTransform>
+                </Ellipse>
+                <Ellipse Width="29" Height="29" StrokeThickness="3" Stroke="{Binding ArcBrush}"
+                         StrokeDashArray="{Binding ArcDash}" StrokeDashCap="{Binding ArcCap}"
+                         Visibility="{Binding HasDashArc, Converter={StaticResource Vis}}" RenderTransformOrigin="0.5,0.5">
+                    <Ellipse.RenderTransform><RotateTransform Angle="-90" /></Ellipse.RenderTransform>
+                </Ellipse>
+                <!-- Percentual: arco que corre ate o valor novo, com a faisca amarela ao encher (RingArc). -->
+                <ui:RingArc Width="29" Height="29" Stroke="{Binding ArcBrush}" Track="{DynamicResource Level.Track}" Fraction="{Binding Fraction}" From="{Binding From}"
+                            RoundCap="{Binding RoundCap}" Visibility="{Binding IsPercent, Converter={StaticResource Vis}}" />
+                <!-- "Lendo...": um trecho amarelo girando, so enquanto a leitura de conexao corre. -->
+                <Ellipse x:Name="Spin" Width="29" Height="29" StrokeThickness="3" Stroke="{DynamicResource Accent}" StrokeDashArray="4 30"
+                         StrokeDashCap="Round" RenderTransformOrigin="0.5,0.5" Visibility="{Binding IsReading, Converter={StaticResource Vis}}">
+                    <Ellipse.RenderTransform><RotateTransform Angle="-90" /></Ellipse.RenderTransform>
+                </Ellipse>
+                <Viewbox Width="14" Height="14">
+                    <Path Style="{StaticResource Glyph}" Data="{Binding Icon}" Stroke="{DynamicResource Text.Secondary}" />
+                </Viewbox>
+                <Ellipse Width="11" Height="11" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,-3,-3,0"
+                         Fill="{DynamicResource Ember}" Stroke="{Binding DotRing}" StrokeThickness="2"
+                         Visibility="{Binding IsLive, Converter={StaticResource Vis}}" />
+            </Grid>
+            <DataTemplate.Triggers>
+                <DataTrigger Binding="{Binding IsReading}" Value="True">
+                    <DataTrigger.EnterActions>
+                        <BeginStoryboard>
+                            <Storyboard RepeatBehavior="Forever">
+                                <DoubleAnimation Storyboard.TargetName="Spin" Storyboard.TargetProperty="(UIElement.RenderTransform).(RotateTransform.Angle)"
+                                                 From="-90" To="270" Duration="0:0:0.9" />
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </DataTrigger.EnterActions>
+                </DataTrigger>
+                <!-- Bateria baixa no aviso: o anel pulsa duas vezes. -->
+                <DataTrigger Binding="{Binding Pulse}" Value="True">
+                    <DataTrigger.EnterActions>
+                        <BeginStoryboard>
+                            <Storyboard BeginTime="0:0:0.65">
+                                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="RingRoot" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)">
+                                    <EasingDoubleKeyFrame KeyTime="0:0:0.18" Value="1.12" /><EasingDoubleKeyFrame KeyTime="0:0:0.4" Value="1" />
+                                    <EasingDoubleKeyFrame KeyTime="0:0:0.58" Value="1.1" /><EasingDoubleKeyFrame KeyTime="0:0:0.9" Value="1" />
+                                </DoubleAnimationUsingKeyFrames>
+                                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="RingRoot" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)">
+                                    <EasingDoubleKeyFrame KeyTime="0:0:0.18" Value="1.12" /><EasingDoubleKeyFrame KeyTime="0:0:0.4" Value="1" />
+                                    <EasingDoubleKeyFrame KeyTime="0:0:0.58" Value="1.1" /><EasingDoubleKeyFrame KeyTime="0:0:0.9" Value="1" />
+                                </DoubleAnimationUsingKeyFrames>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </DataTrigger.EnterActions>
+                </DataTrigger>
+            </DataTemplate.Triggers>
+        </DataTemplate>
+
+        <DataTemplate x:Key="Row" DataType="{x:Type ui:RingItem}">
+            <Border x:Name="Bg" ui:Motion.Hover="{DynamicResource Card.FillHover}" ui:Motion.Press="0.985" Padding="6" CornerRadius="6" Background="Transparent" Cursor="Hand" ToolTip="{Binding Tooltip}">
+                <DockPanel>
+                    <ContentPresenter DockPanel.Dock="Left" Content="{Binding}" ContentTemplate="{StaticResource Ring}" Margin="0,0,10,0" />
+                    <TextBlock DockPanel.Dock="Right" Text="{Binding ValueText}" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"
+                               Typography.NumeralAlignment="Tabular" Foreground="{Binding ValueBrush}" Opacity="{Binding RingOpacity}" Margin="8,0,0,0" />
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" LineHeight="18" />
+                        <StackPanel Orientation="Horizontal">
+                            <Ellipse Width="6" Height="6" Fill="{DynamicResource Accent}" Margin="0,1,5,0" VerticalAlignment="Center"
+                                     Visibility="{Binding IsLive, Converter={StaticResource Vis}}" />
+                            <Viewbox Width="11" Height="11" Margin="0,1,5,0" Visibility="{Binding IsStale, Converter={StaticResource Vis}}">
+                                <Path Style="{StaticResource Glyph}" Data="{x:Static ui:Icons.Clock}" Stroke="{DynamicResource Text.Secondary}" />
+                            </Viewbox>
+                            <TextBlock Text="{Binding Meta}" FontSize="11" LineHeight="14" Foreground="{Binding MetaBrush}" TextTrimming="CharacterEllipsis" />
+                        </StackPanel>
+                    </StackPanel>
+                </DockPanel>
+            </Border>
+        </DataTemplate>
+    </Window.Resources>
+
+    <Grid x:Name="RootGrid">
+        <!-- Esconder sozinho: uma alca fina na cor escolhida (padrao: a do app) (invisivel, ninguem achava o widget), faixa de toque e ponto de alerta. -->
+        <Grid x:Name="HandleView" Visibility="Collapsed" Width="20" Height="160" Background="#01000000">
+            <Border x:Name="HandleBar" Width="5" Height="56" Background="{DynamicResource Accent}" BorderBrush="#24000000" Opacity="0.85" />
+            <Ellipse x:Name="HandleAlert" Width="11" Height="11" VerticalAlignment="Top" Margin="0,0,0,0"
+                     Fill="{DynamicResource Level.Alert}" Stroke="#73000000" StrokeThickness="2" Visibility="Collapsed" />
+        </Grid>
+
+        <!-- Aviso de conexao: a lingueta sai de tras do widget (coluna do lado de dentro, recortada). -->
+        <Grid x:Name="Strip">
+            <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+            <Border x:Name="NoticeClip" Grid.Column="0" ClipToBounds="True" VerticalAlignment="Top" Visibility="Collapsed" Padding="10,8,0,8">
+                <Border x:Name="NoticeTab" CornerRadius="8,0,0,8" Padding="12,8,14,9" MinWidth="150" MaxWidth="240">
+                    <Border.RenderTransform><TranslateTransform x:Name="NoticeMove" /></Border.RenderTransform>
+                    <StackPanel>
+                        <TextBlock x:Name="NoticeName" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                        <Grid>
+                            <TextBlock x:Name="NoticeStateOld" FontSize="12" Foreground="{DynamicResource Text.Tertiary}" Typography.NumeralAlignment="Tabular" Opacity="0" />
+                            <TextBlock x:Name="NoticeState" FontSize="12" Foreground="{DynamicResource Text.Tertiary}" Typography.NumeralAlignment="Tabular" TextTrimming="CharacterEllipsis">
+                                <TextBlock.RenderTransform><TranslateTransform x:Name="NoticeStateMove" /></TextBlock.RenderTransform>
+                            </TextBlock>
+                        </Grid>
+                        <!-- Licenca da marca (mostra aprovada em 2026-11-12): so no aviso de Consent. -->
+                        <StackPanel x:Name="NoticeActions" Orientation="Horizontal" Margin="0,8,0,0" Visibility="Collapsed">
+                            <Button x:Name="NoticeAllow" Height="28" Cursor="Hand" Focusable="False" AutomationProperties.Name="{ui:Tr 'Permitir', 'Allow'}">
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border ui:Motion.Press="0.97" CornerRadius="4" Padding="12,0" Background="{DynamicResource Accent}">
+                                            <TextBlock Text="{ui:Tr 'Permitir', 'Allow'}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource Accent.Foreground}" VerticalAlignment="Center" />
+                                        </Border>
+                                    </ControlTemplate>
+                                </Button.Template>
+                            </Button>
+                            <Button x:Name="NoticeLater" Height="28" Margin="6,0,0,0" Cursor="Hand" Focusable="False" AutomationProperties.Name="{ui:Tr 'Agora não', 'Not now'}">
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border ui:Motion.Hover="{DynamicResource Card.FillHover}" ui:Motion.Press="0.97" CornerRadius="4" Padding="12,0" Background="{DynamicResource Button.Fill}">
+                                            <TextBlock Text="{ui:Tr 'Agora não', 'Not now'}" FontSize="12" Foreground="{DynamicResource Text.Secondary}" VerticalAlignment="Center" />
+                                        </Border>
+                                    </ControlTemplate>
+                                </Button.Template>
+                            </Button>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+            </Border>
+        <Border x:Name="Card" Grid.Column="1">
+            <Grid>
+                <!-- Recolhido: um anel por aparelho, na ordem do painel. -->
+                <ItemsControl x:Name="Rings" Margin="8,10">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate DataType="{x:Type ui:RingItem}">
+                            <StackPanel ToolTip="{Binding Tooltip}">
+                                <ContentPresenter Content="{Binding}" ContentTemplate="{StaticResource Ring}" />
+                                <TextBlock Text="{Binding ValueText}" FontSize="10" HorizontalAlignment="Center" Margin="0,2,0,0"
+                                           Typography.NumeralAlignment="Tabular" Foreground="{Binding ValueBrush}" Opacity="{Binding RingOpacity}" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                    <ItemsControl.ItemContainerStyle>
+                        <Style TargetType="ContentPresenter">
+                            <Setter Property="Margin" Value="0,0,0,8" />
+                        </Style>
+                    </ItemsControl.ItemContainerStyle>
+                </ItemsControl>
+
+                <!-- Expandido (mouse parado em cima): nome, ritmo e valor; atualizar so existe aqui. -->
+                <StackPanel x:Name="Expanded" Width="268" Margin="0" Visibility="Collapsed">
+                    <DockPanel x:Name="DragArea" Margin="10,8,8,6" Background="Transparent" Cursor="SizeAll" ToolTip="{ui:Tr 'Arraste para qualquer borda, em qualquer tela', 'Drag to any edge, on any screen'}">
+                        <Button x:Name="RefreshButton" DockPanel.Dock="Right" Width="28" Height="28" Cursor="Hand" Focusable="False"
+                                ToolTip="{ui:Tr 'Atualizar os aparelhos sob demanda', 'Refresh devices on demand'}" AutomationProperties.Name="{ui:Tr 'Atualizar', 'Refresh'}">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border x:Name="B" ui:Motion.Hover="{DynamicResource Card.FillHover}" ui:Motion.Press="0.97" CornerRadius="4" Background="Transparent">
+                                        <Viewbox Width="14" Height="14">
+                                            <Path Style="{StaticResource Glyph}" Data="{x:Static ui:Icons.Refresh}" />
+                                        </Viewbox>
+                                    </Border>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+                        <TextBlock x:Name="ReadAge" DockPanel.Dock="Right" FontSize="11" Foreground="{DynamicResource Text.Tertiary}" VerticalAlignment="Center" Margin="0,0,8,0" />
+                        <TextBlock x:Name="TitleText" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource Text.Secondary}" VerticalAlignment="Center" />
+                    </DockPanel>
+                    <ItemsControl x:Name="Rows" Margin="8,0" ItemTemplate="{StaticResource Row}" />
+                    <Button x:Name="OpenPanelButton" Margin="8,4,8,8" Height="32" Cursor="Hand" Focusable="False" AutomationProperties.Name="{ui:Tr 'Abrir painel', 'Open panel'}">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border x:Name="B" ui:Motion.Hover="{DynamicResource Card.FillHover}" ui:Motion.Press="0.97" CornerRadius="4" Background="{DynamicResource Button.Fill}">
+                                    <TextBlock Text="{ui:Tr 'Abrir painel', 'Open panel'}" FontSize="12" Foreground="{DynamicResource Text.Secondary}"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                </Border>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+        </Grid>
+    </Grid>
+</Window>

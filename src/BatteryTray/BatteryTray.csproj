@@ -1,0 +1,71 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <!-- 10.0.19041: Windows.UI.Composition (HostBackdropBrush) para o desfoque; ver Ui/BlurUnderlay.cs. -->
+    <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
+    <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
+    <!-- WPF desenha o painel e o widget; do WinForms so sobra o NotifyIcon da bandeja. -->
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+
+    <AssemblyName>Joule</AssemblyName>
+    <RootNamespace>BatteryTray</RootNamespace>
+    <Product>Joule</Product>
+    <Version>0.1.0</Version>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>joule.ico</ApplicationIcon>
+
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>true</SelfContained>
+    <PublishSingleFile>true</PublishSingleFile>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <!-- Sem compressao: comprimido, o .NET descomprime WPF+WinForms na memoria do
+         processo (medido: 192 MB privados contra ~106 MB). O app fica o dia todo
+         na bandeja; disco se paga uma vez. -->
+    <EnableCompressionInSingleFile>false</EnableCompressionInSingleFile>
+    <PublishTrimmed>false</PublishTrimmed>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+    <DebugType>none</DebugType>
+  </PropertyGroup>
+
+  <!-- Canal de teste: dotnet publish -p:JouleChannel=teste (o tools/release.ps1 faz isso). -->
+  <PropertyGroup Condition="'$(JouleChannel)' == 'teste'">
+    <DefineConstants>$(DefineConstants);JOULE_TESTE</DefineConstants>
+    <AssemblyName>JouleTeste</AssemblyName>
+    <Product>Joule Teste</Product>
+  </PropertyGroup>
+
+  <!-- Pasta de atualizacao do Teste: o release.ps1 passa -p:JouleTestFeed=<repo>\releases\teste; o caminho nao fica no codigo. -->
+  <ItemGroup Condition="'$(JouleChannel)' == 'teste'">
+    <AssemblyMetadata Include="JouleTestFeed" Value="$(JouleTestFeed)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Instalador e atualizador (Setup.exe, atualizacao pela pasta releases/). -->
+    <PackageReference Include="Velopack" Version="1.2.161" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- WPF e WinForms tem Application, Color, Brush...: cada arquivo importa o seu. -->
+    <Using Remove="System.Windows.Forms" />
+    <Using Remove="System.Drawing" />
+    <!-- O WPF tira System.IO (Path conflita com Shapes.Path); o nucleo precisa dele. -->
+    <Using Include="System.IO" />
+    <!-- Geist (OFL) so no nome "Joule" do cabecalho; vai dentro do exe. -->
+    <Resource Include="Fonts\Geist-SemiBold.ttf" />
+    <!-- Licencas ao lado do exe, em .txt para abrir no Bloco de Notas (tela Sobre). -->
+    <None Include="..\..\LICENSE" Link="LICENSE.txt" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" ExcludeFromSingleFile="true" />
+    <None Include="..\..\THIRD-PARTY-NOTICES.md" Link="THIRD-PARTY-NOTICES.txt" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" ExcludeFromSingleFile="true" />
+    <None Include="Fonts\OFL.txt" Link="OFL.txt" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" ExcludeFromSingleFile="true" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- "Mandar meu aparelho": a coleta do JouleScan, mesmo codigo, sem o console. -->
+    <Compile Include="..\BatteryScan\*.cs" Exclude="..\BatteryScan\Program.cs;..\BatteryScan\ScanSelfTest.cs" LinkBase="Scan" />
+  </ItemGroup>
+
+</Project>
