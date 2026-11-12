@@ -25,7 +25,7 @@ if ($Canal -eq 'publicar') {
     $out  = Join-Path $root 'releases\main'
     $repo = 'https://github.com/DillanCidral/Joule'   # o mesmo do AppInfo.UpdateFeed
     if (-not $Versao) {
-        $Versao = Get-ChildItem $out -Filter 'DillanCidral.Joule-*-full.nupkg' |
+        $Versao = Get-ChildItem $out -Filter 'JouleApp-*-full.nupkg' |
             ForEach-Object { if ($_.Name -match '-(\d+\.\d+\.\d+)-') { [version]$Matches[1] } } |
             Sort-Object -Descending | Select-Object -First 1
     }
@@ -50,7 +50,7 @@ if ($Canal -eq 'publicar') {
 $root   = Split-Path $PSScriptRoot -Parent
 $dotnet = Join-Path $env:USERPROFILE '.dotnet\dotnet.exe'   # o SDK nao esta no PATH
 $teste  = $Canal -eq 'teste'
-$packId = if ($teste) { 'DillanCidral.JouleTeste' } else { 'DillanCidral.Joule' }
+$packId = if ($teste) { 'DillanCidral.JouleTeste' } else { 'JouleApp' }   # sem o nome do dono no download (2026-11-12)
 $exe    = if ($teste) { 'JouleTeste.exe' } else { 'Joule.exe' }
 $title  = if ($teste) { 'Joule Teste' } else { 'Joule' }
 # Tela do instalador: aprovada na pasta identidade-visual (finais\joule\instalador), 2026-11-04.
@@ -75,7 +75,7 @@ if ($LASTEXITCODE) { throw "dotnet publish falhou ($LASTEXITCODE)" }
 Push-Location $root   # o vpk e' ferramenta local (.config\dotnet-tools.json)
 try {
     & $dotnet tool run vpk -- pack --runtime win-x64 --packId $packId --packVersion $Versao --packDir $pub `
-        --mainExe $exe --packTitle $title --packAuthors 'Dillan Cidral' `
+        --mainExe $exe --packTitle $title --packAuthors 'Dillan.apps' `
         --icon (Join-Path $root 'src\BatteryTray\joule.ico') --shortcuts StartMenuRoot --outputDir $out `
         --splashImage $splash --splashProgressColor $barra
     if ($LASTEXITCODE) { throw "vpk pack falhou ($LASTEXITCODE)" }

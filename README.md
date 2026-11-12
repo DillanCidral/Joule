@@ -32,7 +32,7 @@ battery your wireless devices have left. It is free, open source and in
 
 ## Download
 
-Get `DillanCidral.Joule-win-Setup.exe` from the
+Get `JouleApp-win-Setup.exe` from the
 [Releases page](https://github.com/DillanCidral/Joule/releases) and run it.
 
 - No administrator rights needed. It installs for your user only and shows up

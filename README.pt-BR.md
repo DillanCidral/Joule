@@ -32,7 +32,7 @@ está em **beta**.
 
 ## Baixar
 
-Baixe o `DillanCidral.Joule-win-Setup.exe` na
+Baixe o `JouleApp-win-Setup.exe` na
 [página de Releases](https://github.com/DillanCidral/Joule/releases) e abra.
 
 - Não precisa de administrador. Instala só para o seu usuário e aparece em
