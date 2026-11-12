@@ -1,14 +1,21 @@
-# Joule
+<h1 align="center"><img src="docs/images/capa.png" alt="Joule" width="100%"></h1>
 
-**Battery for your wireless mouse, headset, controller and keyboard, in the Windows tray.**
+<p align="center"><strong>Battery for your wireless mouse, headset, controller and keyboard, in the Windows tray.</strong></p>
 
-[![Latest release](https://img.shields.io/github/v/release/DillanCidral/Joule)](https://github.com/DillanCidral/Joule/releases/latest)
-[![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-blue)](LICENSE)
-![Windows 11](https://img.shields.io/badge/Windows-11-0078D4)
+<p align="center">
+  <a href="https://github.com/DillanCidral/Joule/releases/latest"><img src="https://img.shields.io/github/v/release/DillanCidral/Joule?color=FFC21F&labelColor=1D1B18" alt="Latest release"></a>
+  <a href="https://github.com/DillanCidral/Joule/releases"><img src="https://img.shields.io/github/downloads/DillanCidral/Joule/total?color=FFC21F&labelColor=1D1B18" alt="Downloads"></a>
+  <img src="https://img.shields.io/badge/Windows-11-FFC21F?labelColor=1D1B18" alt="Windows 11">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-AGPL--3.0-FFC21F?labelColor=1D1B18" alt="License: AGPL-3.0"></a>
+</p>
 
-[Português](README.pt-BR.md)
+<p align="center"><img src="docs/images/bandeira-us.png" alt="" height="14"> <strong>English</strong> · <a href="README.pt-BR.md"><img src="docs/images/bandeira-br.png" alt="" height="14"> Português</a></p>
 
-![Joule panel and edge widget, dark theme](docs/images/joule.png)
+<p align="center">
+  <a href="https://github.com/DillanCidral/Joule/releases/latest/download/JouleApp-win-Setup.exe"><img src="https://img.shields.io/badge/Download_for_Windows-FFC21F?style=for-the-badge" alt="Download for Windows" height="40"></a>
+</p>
+
+<p align="center"><img src="docs/images/joule.png" alt="Joule panel and edge widget, dark theme" width="85%"></p>
 
 Joule is a small Windows 11 app that sits in the tray and shows how much
 battery your wireless devices have left. It is free, open source and in
@@ -32,8 +39,8 @@ battery your wireless devices have left. It is free, open source and in
 
 ## Download
 
-Get `JouleApp-win-Setup.exe` from the
-[Releases page](https://github.com/DillanCidral/Joule/releases) and run it.
+Get `JouleApp-win-Setup.exe` with the button above or from the
+[Releases page](https://github.com/DillanCidral/Joule/releases), and run it.
 
 - No administrator rights needed. It installs for your user only and shows up
   in *Installed apps*, where you can remove it.
@@ -44,24 +51,35 @@ Get `JouleApp-win-Setup.exe` from the
 
 ## Supported devices
 
-Checked on real hardware:
+| Device | Connection | Status |
+|---|---|---|
+| Attack Shark R1 | dongle | ✅ checked |
+| Rapoo MT760 Mini | dongle | ✅ checked |
+| DualSense | cable | ✅ checked |
+| Xbox controllers | adapter and cable | ✅ checked |
+| 8BitDo Ultimate 2C | cable | ✅ checked |
+| Any Bluetooth device whose battery Windows already shows in *Settings > Bluetooth* | Bluetooth | ✅ checked |
+| Logitech, Razer, SteelSeries, HyperX and Corsair: mice, keyboards and headsets | dongle | 🧪 not tested yet |
+| About 20 other brands: ATK, VXE, VGN, Pulsar, Dareu, AJAZZ, Lamzu, WLmouse, G-Wolves, Hitscan, K-Snake, Bytech, Motospeed, Keychron, Incott and more Attack Shark models | dongle | 🧪 not tested yet |
 
-- **Attack Shark R1** (dongle)
-- **Rapoo MT760 Mini** (dongle)
-- **DualSense** (cable), **Xbox controllers** (adapter and cable), **8BitDo Ultimate 2C** (cable)
-- **Any Bluetooth device** whose battery Windows already shows in *Settings > Bluetooth*
+🧪 means written from open protocol documentation and not yet tested on real
+hardware. If you own one, your report is what confirms it. Full list:
+[docs/supported-devices.md](docs/supported-devices.md).
 
-In beta, written from open protocol documentation and **not yet tested on real
-hardware**. If you own one, your report is what confirms it:
+## My device is not listed
 
-- **Logitech, Razer, SteelSeries, HyperX and Corsair**: mice, keyboards and headsets
-- **About 20 other brands**: ATK, VXE, VGN, Pulsar, Dareu, AJAZZ, Lamzu, WLmouse,
-  G-Wolves, Hitscan, K-Snake, Bytech, Motospeed, Keychron, Incott and more
-  Attack Shark models
+Open **Settings > Send my device** inside Joule. It listens for 30 seconds
+while you use the device, shows you what it found, removes personal data
+(serial number, Bluetooth address, PC name, user name) and saves a `.txt`.
+You then send that file yourself, as a
+[GitHub issue](https://github.com/DillanCidral/Joule/issues/new/choose) or by
+[e-mail](#contact). Nothing leaves your PC on its own.
 
-Full list: [docs/supported-devices.md](docs/supported-devices.md).
+Want to add the device yourself? See
+[docs/adding-a-device.md](docs/adding-a-device.md).
 
-## What Joule does to your devices
+<details>
+<summary><strong>What Joule does to your devices</strong></summary>
 
 - It reads when you open the app, when you sign in to Windows, when you click
   **Refresh** and when you plug in or turn on a device (only that device, at
@@ -80,19 +98,10 @@ Full list: [docs/supported-devices.md](docs/supported-devices.md).
 
 Details: [SECURITY.md](SECURITY.md).
 
-## My device is not listed
+</details>
 
-Open **Settings > Send my device** inside Joule. It listens for 30 seconds
-while you use the device, shows you what it found, removes personal data
-(serial number, Bluetooth address, PC name, user name) and saves a `.txt`.
-You then send that file yourself, as a
-[GitHub issue](https://github.com/DillanCidral/Joule/issues/new/choose) or by
-e-mail. Nothing leaves your PC on its own.
-
-Want to add the device yourself? See
-[docs/adding-a-device.md](docs/adding-a-device.md).
-
-## Build from source
+<details>
+<summary><strong>Build from source</strong></summary>
 
 You need Windows and the [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0).
 
@@ -106,6 +115,8 @@ dotnet run --project src/BatteryTray -- --demo
 
 `--demo` shows sample devices without touching any hardware. More in
 [CONTRIBUTING.md](CONTRIBUTING.md) and [docs/architecture.md](docs/architecture.md).
+
+</details>
 
 ## Support Joule
 

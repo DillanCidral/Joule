@@ -1,14 +1,21 @@
-# Joule
+<h1 align="center"><img src="docs/images/capa.png" alt="Joule" width="100%"></h1>
 
-**Bateria do mouse, fone, controle e teclado sem fio, na bandeja do Windows.**
+<p align="center"><strong>Bateria do mouse, fone, controle e teclado sem fio, na bandeja do Windows.</strong></p>
 
-[![Versão mais nova](https://img.shields.io/github/v/release/DillanCidral/Joule)](https://github.com/DillanCidral/Joule/releases/latest)
-[![Licença: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-blue)](LICENSE)
-![Windows 11](https://img.shields.io/badge/Windows-11-0078D4)
+<p align="center">
+  <a href="https://github.com/DillanCidral/Joule/releases/latest"><img src="https://img.shields.io/github/v/release/DillanCidral/Joule?label=vers%C3%A3o&color=FFC21F&labelColor=1D1B18" alt="Versão mais nova"></a>
+  <a href="https://github.com/DillanCidral/Joule/releases"><img src="https://img.shields.io/github/downloads/DillanCidral/Joule/total?label=downloads&color=FFC21F&labelColor=1D1B18" alt="Downloads"></a>
+  <img src="https://img.shields.io/badge/Windows-11-FFC21F?labelColor=1D1B18" alt="Windows 11">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/licen%C3%A7a-AGPL--3.0-FFC21F?labelColor=1D1B18" alt="Licença: AGPL-3.0"></a>
+</p>
 
-[English](README.md)
+<p align="center"><img src="docs/images/bandeira-br.png" alt="" height="14"> <strong>Português</strong> · <a href="README.md"><img src="docs/images/bandeira-us.png" alt="" height="14"> English</a></p>
 
-![Painel e widget de borda do Joule, tema escuro](docs/images/joule.png)
+<p align="center">
+  <a href="https://github.com/DillanCidral/Joule/releases/latest/download/JouleApp-win-Setup.exe"><img src="https://img.shields.io/badge/Baixar_para_Windows-FFC21F?style=for-the-badge" alt="Baixar para Windows" height="40"></a>
+</p>
+
+<p align="center"><img src="docs/images/joule.png" alt="Painel e widget de borda do Joule, tema escuro" width="85%"></p>
 
 O Joule é um app pequeno para Windows 11 que fica na bandeja e mostra quanta
 bateria ainda têm os seus aparelhos sem fio. É gratuito, de código aberto e
@@ -32,8 +39,8 @@ está em **beta**.
 
 ## Baixar
 
-Baixe o `JouleApp-win-Setup.exe` na
-[página de Releases](https://github.com/DillanCidral/Joule/releases) e abra.
+Baixe o `JouleApp-win-Setup.exe` pelo botão acima ou na
+[página de Releases](https://github.com/DillanCidral/Joule/releases), e abra.
 
 - Não precisa de administrador. Instala só para o seu usuário e aparece em
   *Aplicativos instalados*, de onde se desinstala.
@@ -44,24 +51,35 @@ Baixe o `JouleApp-win-Setup.exe` na
 
 ## Aparelhos suportados
 
-Conferidos em aparelho real:
+| Aparelho | Conexão | Situação |
+|---|---|---|
+| Attack Shark R1 | dongle | ✅ conferido |
+| Rapoo MT760 Mini | dongle | ✅ conferido |
+| DualSense | cabo | ✅ conferido |
+| Controles Xbox | adaptador e cabo | ✅ conferido |
+| 8BitDo Ultimate 2C | cabo | ✅ conferido |
+| Qualquer aparelho Bluetooth cuja bateria o Windows já mostre em *Configurações > Bluetooth* | Bluetooth | ✅ conferido |
+| Logitech, Razer, SteelSeries, HyperX e Corsair: mouses, teclados e fones | dongle | 🧪 ainda não testado |
+| Umas 20 outras marcas: ATK, VXE, VGN, Pulsar, Dareu, AJAZZ, Lamzu, WLmouse, G-Wolves, Hitscan, K-Snake, Bytech, Motospeed, Keychron, Incott e outros modelos Attack Shark | dongle | 🧪 ainda não testado |
 
-- **Attack Shark R1** (dongle)
-- **Rapoo MT760 Mini** (dongle)
-- **DualSense** (cabo), **controles Xbox** (adaptador e cabo), **8BitDo Ultimate 2C** (cabo)
-- **Qualquer aparelho Bluetooth** cuja bateria o Windows já mostre em *Configurações > Bluetooth*
+🧪 quer dizer escrito a partir de documentação aberta de protocolo e ainda não
+testado em aparelho real. Se você tem um, é o seu relato que confirma. Lista
+completa: [docs/aparelhos-suportados.md](docs/aparelhos-suportados.md).
 
-Em beta, escritos a partir de documentação aberta de protocolo e **ainda não
-testados em aparelho real**. Se você tem um, é o seu relato que confirma:
+## Meu aparelho não está na lista
 
-- **Logitech, Razer, SteelSeries, HyperX e Corsair**: mouses, teclados e fones
-- **Umas 20 outras marcas**: ATK, VXE, VGN, Pulsar, Dareu, AJAZZ, Lamzu, WLmouse,
-  G-Wolves, Hitscan, K-Snake, Bytech, Motospeed, Keychron, Incott e outros
-  modelos Attack Shark
+Abra **Configurações > Mandar meu aparelho** dentro do Joule. Ele escuta por
+30 segundos enquanto você usa o aparelho, mostra o que achou, tira os dados
+pessoais (número de série, endereço Bluetooth, nome do PC, nome de usuário) e
+salva um `.txt`. Quem manda o arquivo é você, num
+[relato no GitHub](https://github.com/DillanCidral/Joule/issues/new/choose) ou
+por [e-mail](#contato). Nada sai do seu PC sozinho.
 
-Lista completa: [docs/aparelhos-suportados.md](docs/aparelhos-suportados.md).
+Quer adicionar o aparelho você mesmo? Veja
+[docs/adicionar-um-aparelho.md](docs/adicionar-um-aparelho.md).
 
-## O que o Joule faz com os seus aparelhos
+<details>
+<summary><strong>O que o Joule faz com os seus aparelhos</strong></summary>
 
 - Lê quando você abre o app, quando você entra no Windows, quando você clica em
   **Atualizar** e quando você liga ou conecta um aparelho (só esse aparelho, no
@@ -80,19 +98,10 @@ Lista completa: [docs/aparelhos-suportados.md](docs/aparelhos-suportados.md).
 
 Detalhes: [SECURITY.pt-BR.md](SECURITY.pt-BR.md).
 
-## Meu aparelho não está na lista
+</details>
 
-Abra **Configurações > Mandar meu aparelho** dentro do Joule. Ele escuta por
-30 segundos enquanto você usa o aparelho, mostra o que achou, tira os dados
-pessoais (número de série, endereço Bluetooth, nome do PC, nome de usuário) e
-salva um `.txt`. Quem manda o arquivo é você, num
-[relato no GitHub](https://github.com/DillanCidral/Joule/issues/new/choose) ou
-por e-mail. Nada sai do seu PC sozinho.
-
-Quer adicionar o aparelho você mesmo? Veja
-[docs/adicionar-um-aparelho.md](docs/adicionar-um-aparelho.md).
-
-## Compilar
+<details>
+<summary><strong>Compilar</strong></summary>
 
 Você precisa de Windows e do [SDK do .NET 8](https://dotnet.microsoft.com/download/dotnet/8.0).
 
@@ -107,6 +116,8 @@ dotnet run --project src/BatteryTray -- --demo
 O `--demo` mostra aparelhos de exemplo sem tocar em hardware nenhum. Mais em
 [CONTRIBUTING.pt-BR.md](CONTRIBUTING.pt-BR.md) e
 [docs/arquitetura.md](docs/arquitetura.md).
+
+</details>
 
 ## Apoiar o Joule
 
