@@ -110,6 +110,18 @@ O `joule-cli` lê a bateria uma vez e mostra. Ainda sem bandeja. Precisa do
 dotnet run --project src/JouleCli
 ```
 
+Um arquivo só, que roda sem o .NET instalado, no Ubuntu, Debian, Fedora,
+openSUSE, Arch e outras distribuições glibc (no Alpine use `linux-musl-x64` e
+`apk add libgcc libstdc++`):
+
+```bash
+dotnet publish src/JouleCli -c Release -r linux-x64 --self-contained -p:PublishSingleFile=true -o out
+./out/joule-cli
+```
+
+O `tools/linux/test-distros.sh` roda ele dentro de Ubuntu, Debian, Fedora,
+openSUSE e Alpine, no seu kernel e com os seus aparelhos (bubblewrap, sem root).
+
 - Logitech, DualSense, DualShock 4, controles Nintendo e Steam, controles Xbox
   pelo Bluetooth (xpadneo) e mouses e teclados Bluetooth LE: lidos do que o
   driver do kernel já informa em `/sys/class/power_supply`. Nada é enviado ao

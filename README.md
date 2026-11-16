@@ -110,6 +110,18 @@ Details: [SECURITY.md](SECURITY.md).
 dotnet run --project src/JouleCli
 ```
 
+One file that runs without .NET installed, on Ubuntu, Debian, Fedora,
+openSUSE, Arch and other glibc distributions (on Alpine use `linux-musl-x64`
+and `apk add libgcc libstdc++`):
+
+```bash
+dotnet publish src/JouleCli -c Release -r linux-x64 --self-contained -p:PublishSingleFile=true -o out
+./out/joule-cli
+```
+
+`tools/linux/test-distros.sh` runs it inside Ubuntu, Debian, Fedora, openSUSE
+and Alpine, on your own kernel and devices (bubblewrap, no root).
+
 - Logitech, DualSense, DualShock 4, Nintendo and Steam controllers, Xbox
   controllers over Bluetooth (xpadneo) and Bluetooth LE mice and keyboards:
   read from what the kernel driver already reports in

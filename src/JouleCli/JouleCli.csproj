@@ -17,6 +17,8 @@
     <RootNamespace>BatteryTray.Cli</RootNamespace>
     <Product>Joule CLI</Product>
     <Version>0.1.0</Version>
+    <!-- No libicu needed: minimal Fedora/openSUSE installs do not ship it. The language comes from LANG instead (Program.cs). -->
+    <InvariantGlobalization>true</InvariantGlobalization>
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
 
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>

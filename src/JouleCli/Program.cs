@@ -28,7 +28,9 @@ internal static class Program
         if (args.Contains("--selftest")) return SelfTest.Run();
 
         var settings = Settings.Load();
-        L.Set(settings.Language);
+        // Invariant globalization hides the user's culture, so "auto" reads the locale variables as glibc does.
+        string locale = new[] { "LC_ALL", "LC_MESSAGES", "LANG" }.Select(Environment.GetEnvironmentVariable).FirstOrDefault(v => !string.IsNullOrEmpty(v)) ?? "";
+        L.Set(settings.Language != "auto" ? settings.Language : locale.StartsWith("pt", StringComparison.OrdinalIgnoreCase) ? "pt" : "en");
         // One-shot reading: wait for the report once instead of keeping a listener open after exit.
         settings.PassiveListenersEnabled = false;
         if (args.Contains("--listen-only")) settings.ListenOnly = true;
