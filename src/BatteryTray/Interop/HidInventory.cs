@@ -19,6 +19,13 @@ public sealed class HidCollection
     public string Product { get; init; } = "";
     public string Manufacturer { get; init; } = "";
 
+    /// <summary>
+    /// Linux only: input report ids of this collection. A hidraw node carries
+    /// every collection of the interface, so the reader keeps only these.
+    /// Empty = the device has no numbered reports (and on Windows, always).
+    /// </summary>
+    public byte[] ReportIds { get; init; } = Array.Empty<byte>();
+
     public string HardwareId => $"{Vid:X4}:{Pid:X4}";
 
     public override string ToString() =>
@@ -41,6 +48,7 @@ public static class HidInventory
 
     public static List<HidCollection> Scan()
     {
+        if (!OperatingSystem.IsWindows()) return HidLinux.Scan();
         var result = new List<HidCollection>();
         HidD_GetHidGuid(out Guid hidGuid);
 
@@ -94,6 +102,8 @@ public static class HidInventory
     /// <summary>Abre com acesso 0 so para ler atributos/caps/strings. Fecha sempre. Publico para o aviso de conexao descrever SO a colecao que entrou.</summary>
     public static HidCollection? Describe(string path)
     {
+        // shortcut: on Linux one node holds several collections and this returns the first; only the Windows device watcher calls it.
+        if (!OperatingSystem.IsWindows()) return HidLinux.Describe(path).FirstOrDefault();
         IntPtr handle = CreateFile(path, 0, FILE_SHARE_READ | FILE_SHARE_WRITE, IntPtr.Zero, OPEN_EXISTING, 0, IntPtr.Zero);
         if (handle == INVALID_HANDLE_VALUE) return null;
 

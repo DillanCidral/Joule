@@ -20,6 +20,9 @@ public sealed class HidPassiveReader : IDisposable
     private readonly Action<byte[]> _onReport;
     private readonly int _reportLength;
     private IntPtr _handle;
+    /// <summary>Linux: the hidraw descriptor (-1 on Windows) and the collection, to keep only its reports.</summary>
+    private int _fd = -1, _waker = -1;
+    private HidCollection? _collection;
     private Thread? _thread;
     private volatile bool _stopping;
     private int _disposed;
@@ -61,6 +64,18 @@ public sealed class HidPassiveReader : IDisposable
         if (collection.InputLen <= 0)
             return null;
 
+        if (!OperatingSystem.IsWindows())
+        {
+            int fd = HidLinux.Open(collection.Path, HidLinux.O_RDONLY);
+            if (fd < 0) return null;
+            int waker = HidLinux.NewWaker();
+            if (waker < 0) { HidLinux.close(fd); return null; }
+            var linux = new HidPassiveReader(collection.Path, INVALID_HANDLE_VALUE, collection.InputLen, onReport) { _fd = fd, _waker = waker, _collection = collection };
+            OpenPaths.AddOrUpdate(collection.Path, 1, (_, n) => n + 1);
+            linux.Start();
+            return linux;
+        }
+
         IntPtr handle = CreateFile(
             collection.Path,
             GENERIC_READ,
@@ -95,6 +110,7 @@ public sealed class HidPassiveReader : IDisposable
 
     private void Loop()
     {
+        if (_fd >= 0) { LoopLinux(); return; }
         var buffer = new byte[_reportLength];
         while (!_stopping)
         {
@@ -117,11 +133,34 @@ public sealed class HidPassiveReader : IDisposable
         }
     }
 
+    /// <summary>Same contract as the Windows loop: one descriptor, one thread, stops for good when the device goes.</summary>
+    private void LoopLinux()
+    {
+        var buffer = new byte[Math.Max(_reportLength, 64) + 1];
+        while (!_stopping)
+        {
+            int got = HidLinux.Read(_fd, _waker, buffer);
+            if (got == 0) continue;
+            if (got < 0) { DeviceLost = !_stopping; return; }
+            if (HidLinux.AsWindowsReport(_collection!, buffer, got) is not { } report) continue;
+            try { _onReport(report); }
+            catch { /* consumidor nao pode derrubar o laco */ }
+        }
+    }
+
     public void Dispose()
     {
         if (Interlocked.Exchange(ref _disposed, 1) != 0) return;
 
         _stopping = true;
+        if (_fd >= 0)
+        {
+            // One wake, like the single CancelIoEx; close only after the thread left poll().
+            HidLinux.Wake(_waker);
+            _thread?.Join(1500);
+            HidLinux.close(_fd);
+            HidLinux.close(_waker);
+        }
         IntPtr handle = _handle;
         _handle = INVALID_HANDLE_VALUE;
 
