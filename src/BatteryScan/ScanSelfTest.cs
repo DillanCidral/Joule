@@ -151,6 +151,12 @@ internal static class ScanSelfTest
         };
         var brands = ProvidersScan.BrandsThatAsk(present, registry);
         Check("jouleScan: Razer pede licenca uma vez, Attack Shark (so escuta) nao", brands.Count == 1 && brands[0].Vid == "1532");
+        var atkMouse = new BatteryTray.Interop.HidCollection { Path = "mouse", Vid = 0x373B, Pid = 0x10F0 };
+        var mercury = new BatteryTray.Interop.HidCollection { Path = "headset", Vid = 0x373B, Pid = 0x107C };
+        var mouseBrands = ProvidersScan.BrandsThatAsk(new[] { atkMouse }, registry);
+        Check("jouleScan: mouse ATK direto pede permissao", mouseBrands.Count == 1 && mouseBrands[0].Vid == "373B");
+        var atkBrands = ProvidersScan.BrandsThatAsk(new[] { atkMouse, mercury }, registry);
+        Check("jouleScan: Mercury pede permissao 373B", atkBrands.Count == 1 && atkBrands[0].Vid == "373B");
 
         Check("PC nao e' periferico", !ScanPrivacy.IsPeripheral(0x10010C));
         Check("gamepad e' periferico", ScanPrivacy.IsPeripheral(0x002508));

@@ -9,7 +9,7 @@ namespace BatteryTray.Diag;
 /// Existem porque essas sao exatamente as regras que impedem o app de mostrar
 /// um valor errado, e nao dependem de o hardware estar plugado.
 /// </summary>
-internal static class SelfTest
+internal static partial class SelfTest
 {
     private static int _passed;
     private static int _failed;
@@ -21,6 +21,7 @@ internal static class SelfTest
     {
         Console.WriteLine("=== self-test ===");
         Log.Silent = true; // aparelhos de mentira abaixo nao vao para o joule.log de verdade
+        RunAtkTests();
 
         // --- Cor da alca do widget: valor editado a mao no settings.json ---
         Check("alca: opcoes conhecidas e #RRGGBB passam", Settings.HandleColor("neutral") == "neutral" && Settings.HandleColor("#2dd4bf") == "#2dd4bf");

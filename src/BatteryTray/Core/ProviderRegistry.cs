@@ -52,6 +52,8 @@ public sealed class ProviderRegistry
             new HyperXProvider(),
             new CorsairProvider(),
             new CompxProvider(),
+            new AtkMouseProvider(),
+            new MercuryProvider(),
             new ChineseBrandsProvider(),
         });
 

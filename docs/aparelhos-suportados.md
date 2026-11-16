@@ -9,7 +9,7 @@ abra um [relato](https://github.com/DillanCidral/Joule/issues) ou use o
 **Mandar meu aparelho** dentro do Joule.
 
 "Escuta" quer dizer que o Joule não manda nada para o aparelho. "Pergunta"
-quer dizer que ele manda a pergunta de bateria uma vez por leitura (veja o
+quer dizer que cada consulta do protocolo é enviada uma vez por leitura (veja o
 [SECURITY.pt-BR.md](../SECURITY.pt-BR.md)).
 
 ## Conferidos
@@ -19,10 +19,37 @@ quer dizer que ele manda a pergunta de bateria uma vez por leitura (veja o
 | Attack Shark R1 | dongle | escuta | Atualiza sozinho enquanto o mouse está acordado. Mouse parado não manda nada |
 | Attack Shark R1 | cabo | presença | Mostra "carregando", sem percentual |
 | Rapoo MT760 Mini | dongle | escuta | O mouse só informa com o programa da Rapoo aberto; sem ele, o Joule mostra o último valor com a idade |
+| ATK 1K DONGLE-PAW (`373B:10F0`) | dongle | pergunta | Uma consulta de bateria por leitura, independente do ATK HUB. O receptor pode indicar carregamento mesmo sem cabo |
+| ATK Mercury I / M1 (`373B:107C`) | dongle | pergunta | Receptor `0005`, fone `0007`. Três consultas conferem versão, estrutura e percentual. Estado de carregamento pendente |
 | DualSense (PS5) | só no cabo | escuta | Por Bluetooth o controle só informa a bateria depois que o PC escreve nele, então esse caminho fica de fora |
 | Controles Xbox | adaptador, cabo | XInput | Faixa (baixa / média / cheia) pelo adaptador; "no cabo" quando plugado |
 | 8BitDo Ultimate 2C | cabo | XInput | Só "no cabo", sem percentual. Pelo dongle ele informa um valor falso, que o Joule descarta |
 | Qualquer aparelho Bluetooth | Bluetooth | lê o Windows | O mesmo número de *Configurações > Bluetooth*. Nada vai pelo rádio |
+
+### Leitura dos aparelhos ATK conferidos
+
+As consultas seguem as permissões de marca, o modo **Só escutar** e o limite
+global de perguntas do Joule. Autorize a marca ATK quando o aplicativo solicitar.
+Os providers são acionados na abertura do Joule, em **Atualizar** e na chegada
+USB do receptor. A leitura de um receptor já conectado depende de **Atualizar**.
+
+- O mouse `373B:10F0` usa a coleção `FF10/1`, entrada de 65 bytes e feature
+  de 9 bytes. Envia `00 82 00 00 00 00 00 00 00` uma vez e aguarda até três
+  segundos pela resposta interrupt `82 08 02 00 FF 03`. No relatório do Windows,
+  os sete bits inferiores do byte 9 trazem o percentual e o bit superior indica
+  carregamento. O parser confere a assinatura e a faixa de 0 a 100. A consulta
+  foi validada com o ATK HUB fechado, inclusive com leitura de 27%. O bit de
+  carregamento pode vir ativo mesmo com o mouse fora do cabo.
+- O Mercury `373B:107C` usa a coleção `FF22/1` em `mi_00/col02`, com features
+  de 64 bytes. O receptor precisa ser `0005`. O comando `AA 01` confirma o
+  firmware `0007` do fone. Duas consultas `AA 03` leem quatro bytes cada,
+  primeiro o ponteiro em `0x0100FE94`, que deve conter `0x0100FE5C`, depois
+  a capacidade em `0x0100FE78`. Os endereços são enviados em big-endian e os
+  valores retornam em little-endian. Cada consulta espera 300 ms antes de ler
+  uma resposta. Versão, ponteiro ou percentual inválido produzem **sem dado**.
+  Nas comparações com o Bluetooth em 100%, 90% e 80%, o canal retornou 100%,
+  93% e 89%, respectivamente. Os testes também conferiram ausência de resposta
+  com o fone desligado. O estado de carregamento ainda precisa ser mapeado.
 
 ## Não testados
 

@@ -9,7 +9,7 @@ If you own a "not tested" device, tell us whether it works: open an
 **Send my device** inside Joule.
 
 "Listens" means Joule sends nothing to the device. "Asks" means it sends the
-battery question once per reading (see [SECURITY.md](../SECURITY.md)).
+each protocol query once per reading (see [SECURITY.md](../SECURITY.md)).
 
 ## Checked
 
@@ -18,10 +18,38 @@ battery question once per reading (see [SECURITY.md](../SECURITY.md)).
 | Attack Shark R1 | dongle | listens | Updates by itself while the mouse is awake. A mouse standing still sends nothing |
 | Attack Shark R1 | cable | presence | Shows "charging", no percentage |
 | Rapoo MT760 Mini | dongle | listens | The mouse only reports when Rapoo's own software is running; otherwise Joule shows the last value with its age |
+| ATK 1K DONGLE-PAW (`373B:10F0`) | dongle | asks | One battery query per reading, independent of ATK HUB. The receiver may report charging with the cable unplugged |
+| ATK Mercury I / M1 (`373B:107C`) | dongle | asks | Receiver `0005`, headset `0007`. Three queries verify version, layout and percentage. Charging state pending |
 | DualSense (PS5) | cable only | listens | Over Bluetooth the controller only reports battery after the host writes to it, so that path is left out |
 | Xbox controllers | adapter, cable | XInput | Coarse level (low / medium / full) on the adapter; "on cable" when wired |
 | 8BitDo Ultimate 2C | cable | XInput | Only "on cable", no percentage. On the dongle it reports a false value, which Joule discards |
 | Any Bluetooth device | Bluetooth | reads Windows | The same number as *Settings > Bluetooth*. Nothing goes over the radio |
+
+### Reading the checked ATK devices
+
+Queries follow Joule's brand permissions, **Listen only** setting and global
+query limit. Allow the ATK brand when prompted. The providers run when Joule
+starts, on **Refresh** and on the receiver's USB arrival. Reading a receiver
+that is already connected requires **Refresh**.
+
+- The `373B:10F0` mouse uses collection `FF10/1`, a 65-byte input report and
+  a 9-byte feature report. It sends `00 82 00 00 00 00 00 00 00` once and waits
+  up to three seconds for the interrupt reply `82 08 02 00 FF 03`. In the
+  Windows report, the lower seven bits of byte 9 contain the percentage and
+  the high bit indicates charging. The parser checks the signature and the
+  0–100 range. The query was validated with ATK HUB closed, including a 27%
+  reading. The charging bit can be set while the mouse is unplugged.
+- The `373B:107C` Mercury uses collection `FF22/1` at `mi_00/col02`, with
+  64-byte feature reports. Receiver version `0005` is required. Command
+  `AA 01` verifies headset firmware `0007`. Two `AA 03` queries read four
+  bytes each, first the pointer at `0x0100FE94`, which must contain
+  `0x0100FE5C`, then capacity at `0x0100FE78`. Addresses are sent in big-endian
+  and values are returned in little-endian. Each query waits 300 ms before
+  reading one reply. An invalid version, pointer or percentage produces
+  **no data**. Comparisons with Bluetooth readings of 100%, 90% and 80%
+  returned 100%, 93% and 89% through this channel, respectively. Tests also
+  confirmed no reply with the headset switched off. Charging state still
+  needs to be mapped.
 
 ## Not tested
 

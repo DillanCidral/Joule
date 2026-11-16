@@ -15,7 +15,7 @@ por horas. As regras abaixo existem por isso, e o código as impõe.
 | Nunca abrir as coleções de mouse (`0x01`/`0x02`) ou teclado (`0x01`/`0x06`) de sistema | `HidInventory.IsSystemReserved` |
 | Nunca leitura bloqueante em coleção sem relatório de entrada | `HidPassiveReader.Open` |
 | Aparelho sumiu no meio da operação: parar de tocar nele | laço do `HidPassiveReader` |
-| Escrita só por uma porta: só a pergunta de bateria que projetos abertos já usam, uma por vez, esperando a resposta, no máximo 48 por leitura somando todos os aparelhos | `Interop/HidRequest.cs` (o único `WriteFile` do projeto) |
+| Escrita só por uma porta, para consultas de bateria e verificações de versão e estrutura necessárias à leitura, uma por vez, esperando a resposta, no máximo 48 por leitura somando todos os aparelhos | `Interop/HidRequest.cs` (o único `WriteFile` do projeto) |
 | Marca ainda não conferida em aparelho real não recebe pergunta até você permitir (um aviso quando o aparelho aparece, ou **Permitir** no painel). A permissão vale por marca e sai nas Configurações | `HidRequest` (a mesma porta) |
 | **Só escutar**, nas Configurações, desliga toda pergunta, até nas marcas permitidas | `HidRequest` |
 | Modelo relatado com problema entra numa lista de bloqueio e nunca recebe pergunta, mesmo permitido | `HidRequest.Blocked` |
@@ -37,6 +37,15 @@ Windows guardou. Passar o mouse no widget nunca dispara leitura.
   Só a pergunta de leitura, nunca comando que mude configuração.
 - Protocolos que exigem repetir a pergunta até duas respostas baterem ficam de
   fora de propósito.
+
+O mouse ATK 1K DONGLE-PAW usa uma consulta de bateria por feature, com
+resposta interrupt, por leitura sob demanda. O Mercury I / M1 usa três
+consultas sequenciais por leitura, com um envio e uma resposta por consulta.
+O provider verifica receptor `0005`, fone `0007` e o ponteiro da estrutura
+antes de ler quatro bytes da capacidade. Os endereços ficam fixos no provider.
+Os formatos ATK foram obtidos de capturas locais e da análise do firmware,
+com validação nos aparelhos. Os comandos e endereços estão documentados em
+[aparelhos suportados](docs/aparelhos-suportados.md#leitura-dos-aparelhos-atk-conferidos).
 
 ## Privacidade
 

@@ -55,12 +55,14 @@ Baixe o `JouleApp-win-Setup.exe` pelo botão acima ou na
 |---|---|---|
 | Attack Shark R1 | dongle | ✅ conferido |
 | Rapoo MT760 Mini | dongle | ✅ conferido |
+| ATK 1K DONGLE-PAW | dongle | ✅ conferido |
+| ATK Mercury I / M1, receptor `0005` e fone `0007` | dongle | ✅ conferido |
 | DualSense | cabo | ✅ conferido |
 | Controles Xbox | adaptador e cabo | ✅ conferido |
 | 8BitDo Ultimate 2C | cabo | ✅ conferido |
 | Qualquer aparelho Bluetooth cuja bateria o Windows já mostre em *Configurações > Bluetooth* | Bluetooth | ✅ conferido |
 | Logitech, Razer, SteelSeries, HyperX e Corsair: mouses, teclados e fones | dongle | 🧪 ainda não testado |
-| Umas 20 outras marcas: ATK, VXE, VGN, Pulsar, Dareu, AJAZZ, Lamzu, WLmouse, G-Wolves, Hitscan, K-Snake, Bytech, Motospeed, Keychron, Incott e outros modelos Attack Shark | dongle | 🧪 ainda não testado |
+| Outros modelos ATK e cerca de 20 marcas como VXE, VGN, Pulsar, Dareu, AJAZZ, Lamzu, WLmouse, G-Wolves, Hitscan, K-Snake, Bytech, Motospeed, Keychron, Incott e Attack Shark | dongle | 🧪 ainda não testado |
 
 🧪 quer dizer escrito a partir de documentação aberta de protocolo e ainda não
 testado em aparelho real. Se você tem um, é o seu relato que confirma. Lista

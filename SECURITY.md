@@ -15,7 +15,7 @@ exist because of that, and the code enforces them.
 | Never open the system mouse (`0x01`/`0x02`) or system keyboard (`0x01`/`0x06`) collections | `HidInventory.IsSystemReserved` |
 | Never a blocking read on a collection with no input reports | `HidPassiveReader.Open` |
 | Device gone in the middle of an operation: stop touching it | `HidPassiveReader` loop |
-| Writing only through one door: only the battery question open projects already use, one at a time, waiting for the answer, at most 48 per reading for all devices together | `Interop/HidRequest.cs` (the only `WriteFile` in the project) |
+| Writing through one door for battery queries and version and layout checks needed for the reading, one at a time, waiting for the answer, at most 48 per reading for all devices together | `Interop/HidRequest.cs` (the only `WriteFile` in the project) |
 | A brand not yet confirmed on real hardware gets no question until you allow it (a notice when the device first appears, or **Allow** in the panel). Permission is per brand and can be removed in Settings | `HidRequest` (same door) |
 | **Listen only** in Settings turns every question off, even for allowed brands | `HidRequest` |
 | A model reported as misbehaving goes on a block list and never gets a question, even when allowed | `HidRequest.Blocked` |
@@ -37,6 +37,15 @@ itself stored. Hovering the widget never triggers a reading.
   Only the read question, never a command that changes a setting.
 - Protocols that require repeating the question until two answers match are
   left out on purpose.
+
+The ATK 1K DONGLE-PAW mouse uses one battery feature query, with an interrupt
+reply, per on-demand reading. The Mercury I / M1 uses three sequential
+queries per reading, with one send and one reply per query.
+The provider verifies receiver `0005`, headset `0007` and the power structure
+pointer before reading four capacity bytes. Addresses are fixed in the provider.
+The ATK formats were obtained from local captures and firmware analysis,
+with validation on real devices. Commands and addresses are documented in
+[supported devices](docs/supported-devices.md#reading-the-checked-atk-devices).
 
 ## Privacy
 
