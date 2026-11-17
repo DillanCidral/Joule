@@ -692,6 +692,7 @@
                                             <RadioButton x:Name="LanguageEn" GroupName="Language" Style="{StaticResource Segment}" Padding="4,6" Content="English" />
                                             <RadioButton x:Name="LanguageFr" GroupName="Language" Style="{StaticResource Segment}" Padding="4,6" Content="Français" />
                                             <RadioButton x:Name="LanguageRu" GroupName="Language" Style="{StaticResource Segment}" Padding="4,6" Content="Русский" />
+                                            <RadioButton x:Name="LanguageZhTw" GroupName="Language" Style="{StaticResource Segment}" Padding="4,6" Content="繁體中文" />
                                         </UniformGrid>
                                     </Border>
                                     <DockPanel x:Name="LanguageRestart" Margin="0,10,0,0" Visibility="Collapsed">

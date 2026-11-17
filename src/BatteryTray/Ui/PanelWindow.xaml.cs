@@ -320,11 +320,12 @@ public partial class PanelWindow : Window
             ThresholdSlider.Value = _settings.LowBatteryThreshold;
             ThresholdValue.Text = $"{_settings.LowBatteryThreshold}%";
             AutostartSwitch.IsChecked = Autostart.IsEnabled();
-            LanguageAuto.IsChecked = _settings.Language is not ("pt" or "en" or "fr" or "ru");
+            LanguageAuto.IsChecked = _settings.Language is not ("pt" or "en" or "fr" or "ru" or "zh-TW");
             LanguagePt.IsChecked = _settings.Language == "pt";
             LanguageEn.IsChecked = _settings.Language == "en";
             LanguageFr.IsChecked = _settings.Language == "fr";
             LanguageRu.IsChecked = _settings.Language == "ru";
+            LanguageZhTw.IsChecked = _settings.Language == "zh-TW";
             LanguageRestart.Visibility = L.Resolve(_settings.Language) != L.Code ? Visibility.Visible : Visibility.Collapsed;
 
             var requested = Theme.Parse(_settings.Appearance);
@@ -422,6 +423,7 @@ public partial class PanelWindow : Window
         LanguageEn.Checked += (_, _) => Changed(() => _settings.Language = "en");
         LanguageFr.Checked += (_, _) => Changed(() => _settings.Language = "fr");
         LanguageRu.Checked += (_, _) => Changed(() => _settings.Language = "ru");
+        LanguageZhTw.Checked += (_, _) => Changed(() => _settings.Language = "zh-TW");
         RestartButton.Click += (_, _) => RestartRequested?.Invoke();
 
         void SetAppearance(Appearance a) => Changed(() =>
