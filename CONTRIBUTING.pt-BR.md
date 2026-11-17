@@ -1,6 +1,6 @@
 # Como contribuir
 
-[English](CONTRIBUTING.md)
+[English](CONTRIBUTING-en.md)·[zh-TW](CONTRIBUTING.md)
 
 A contribuição mais útil é um aparelho: uma captura do **Mandar meu aparelho**
 (não precisa de código) ou um provider escrito por você
