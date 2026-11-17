@@ -1,6 +1,6 @@
 # Segurança e privacidade
 
-[English](SECURITY.md)
+[English](SECURITY.en.md) · [zh-TW](SECURITY.md)
 
 O Joule conversa com aparelhos dos quais você depende. Durante o
 desenvolvimento, uma leitura HID em loop derrubou um mouse e um fone do USB
