@@ -1,8 +1,8 @@
-\# 新增支援裝置
+# 新增支援裝置
 
 
 
-\[English](adding-a-device.md) · \[Português](adicionar-um-aparelho.md)
+[English](adding-a-device.md) · [Português](adicionar-um-aparelho.md)
 
 
 
@@ -14,15 +14,15 @@
 
 
 
-\## 1. 確認裝置回報電量的方式
+## 1. 確認裝置回報電量的方式
 
 
 
-\- \*\*Windows 系統本身已可顯示電量\*\*（位於「設定 > 藍牙與裝置」）：無需進行任何開發，內建的 Bluetooth Provider 已能直接讀取。
+- **Windows 系統本身已可顯示電量**（位於「設定 > 藍牙與裝置」）：無需進行任何開發，內建的 Bluetooth Provider 已能直接讀取。
 
-\- \*\*已有開源專案記錄其通訊協定\*\*（例如 Solaar、OpenRazer、HeadsetControl、OpenMouse、rivalcfg 等）：請僅參考其\*\*封包格式\*\*並自行撰寫程式碼，同時在註解中標明資料來源。若需複製型號對照表等資料，請務必先確認其開源授權條款。
+- **已有開源專案記錄其通訊協定**（例如 Solaar、OpenRazer、HeadsetControl、OpenMouse、rivalcfg 等）：請僅參考其\*\*封包格式\*\*並自行撰寫程式碼，同時在註解中標明資料來源。若需複製型號對照表等資料，請務必先確認其開源授權條款。
 
-\- \*\*尚無任何公開文件記錄\*\*：請自行擷取封包。在操作裝置的同時執行封包收集器，觀察哪個位元組（Byte）會隨著電量變化：
+- **尚無任何公開文件記錄**：請自行擷取封包。在操作裝置的同時執行封包收集器，觀察哪個位元組（Byte）會隨著電量變化：
 
 
 
@@ -38,7 +38,7 @@ dotnet run --project src/BatteryScan -c Release
 
 
 
-\## 2. 選擇對硬體最溫和的讀取方式
+## 2. 選擇對硬體最溫和的讀取方式
 
 
 
@@ -60,7 +60,7 @@ dotnet run --project src/BatteryScan -c Release
 
 
 
-\## 3. 撰寫 Provider 類別
+## 3. 撰寫 Provider 類別
 
 
 
@@ -152,17 +152,17 @@ public sealed class AcmeProvider : IBatteryProvider, IPassiveListenerProvider, I
 
 
 
-\- 對讀取到的數值沒有把握？請回傳 `NoData` 並附上簡短原因。絕不猜測數值，也絕不回傳 `0`。
+- 對讀取到的數值沒有把握？請回傳 `NoData` 並附上簡短原因。絕不猜測數值，也絕不回傳 `0`。
 
-\- 使用傳輸線連接且無法取得電量百分比時：請回傳 `BatteryReading.Charging()`。
+- 使用傳輸線連接且無法取得電量百分比時：請回傳 `BatteryReading.Charging()`。
 
-\- 同一款裝置的無線接收器與有線連接模式，應共用相同的 `LogicalKey`（邏輯鍵值）。
+- 同一款裝置的無線接收器與有線連接模式，應共用相同的 `LogicalKey`（邏輯鍵值）。
 
-\- 若必須主動查詢：每次讀取僅發送一筆查詢並等待回應，且一律透過 `HidRequest` 執行。專案中其他任何檔案皆不可直接對裝置進行寫入。
+- 若必須主動查詢：每次讀取僅發送一筆查詢並等待回應，且一律透過 `HidRequest` 執行。專案中其他任何檔案皆不可直接對裝置進行寫入。
 
 
 
-\## 4. 註冊 Provider
+## 4. 註冊 Provider
 
 
 
@@ -170,7 +170,7 @@ public sealed class AcmeProvider : IBatteryProvider, IPassiveListenerProvider, I
 
 
 
-\## 5. 測試解析器
+## 5. 測試解析器
 
 
 
@@ -186,9 +186,9 @@ dotnet run --project tools/diag -c Release -- --selftest
 
 
 
-\## 6. 更新說明文件
+## 6. 更新說明文件
 
 
 
-請將新支援的裝置補入 \[supported-devices.md](supported-devices.md) 與 \[aparelhos-suportados.md](aparelhos-suportados.md) 清單中。若尚未在實體硬體上驗證過，請將其歸類於「尚未實機測試（Not tested）」區塊。若封包格式參考自其他開源專案，請務必將該專案列入根目錄的 `THIRD-PARTY-NOTICES.md` 中。
+請將新支援的裝置補入 [supported-devices.md](supported-devices.md) 與 [aparelhos-suportados.md](aparelhos-suportados.md) 清單中。若尚未在實體硬體上驗證過，請將其歸類於「尚未實機測試（Not tested）」區塊。若封包格式參考自其他開源專案，請務必將該專案列入根目錄的 `THIRD-PARTY-NOTICES.md` 中。
 
