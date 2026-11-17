@@ -1,6 +1,6 @@
 # Safety and privacy
 
-[Português](SECURITY.pt-BR.md)
+[Português](SECURITY.pt-BR.md) · [zh-TW](SECURITY.md)
 
 Joule talks to hardware you depend on. During development, an aggressive HID
 read loop knocked a mouse and a headset off USB for hours. The rules below
