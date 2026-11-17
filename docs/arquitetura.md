@@ -1,6 +1,6 @@
 # Arquitetura
 
-[English](architecture.md)
+[English](architecture.en.md) · [zh-TW](architecture.md)
 
 O Joule é um executável único e autocontido, `win-x64` (.NET 8, WPF), que roda
 sem direitos de administrador.
