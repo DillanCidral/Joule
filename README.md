@@ -71,7 +71,7 @@ Joule 是一款常駐於 Windows 11 系統匣的小型應用程式，能即時�
 - 絕不顯示未實際讀取到的假數值。沒有讀到資料時一律顯示「無電量資料」，絕不會顯示為「0%」。
 - 絕不向外部傳送任何遙測資料。唯一的網路連線僅用於檢查 GitHub Releases 是否有新版本。
 
-詳細安全性規範請參閱：[SECURITY.md](SECURITY.md)。
+詳細安全性規範請參閱：[SECURITY.zh-TW.md](SECURITY.zh-TW.md)。
 
 您需要 Windows 作業系統與 [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)。
 
@@ -83,7 +83,7 @@ dotnet build src/BatteryTray -c Debug
 dotnet run --project src/BatteryTray -- --demo
 ```
 
-`--demo` 參數可顯示模擬的範例裝置，不會存取任何實體硬體。更多開發細節請參閱 [CONTRIBUTING.md](CONTRIBUTING.md) 與 [docs/architecture.md](docs/architecture.md)。
+`--demo` 參數可顯示模擬的範例裝置，不會存取任何實體硬體。更多開發細節請參閱 [CONTRIBUTING.zh-TW.md](CONTRIBUTING.zh-TW.md) 與 [docs/architecture.zh-TW.md](docs/architecture.zh-TW.md)。
 
 ## 致謝
 
