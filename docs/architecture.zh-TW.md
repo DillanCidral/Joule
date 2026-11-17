@@ -1,8 +1,8 @@
-\# 系統架構
+# 系統架構
 
 
 
-\[English](architecture.md) · \[Português](arquitetura.md)
+[English](architecture.md) · [Português](arquitetura.md)
 
 
 
@@ -10,7 +10,7 @@ Joule 是一個獨立封裝（Self-contained）的 `win-x64` 單一執行檔（�
 
 
 
-\## 架構分層
+## 架構分層
 
 
 
@@ -42,23 +42,23 @@ tools/diag/        診斷工具與自動化自我測試（Self-test）
 
 
 
-\## 電量讀取流程
+## 電量讀取流程
 
 
 
-1\. `HidInventory.Scan` 列舉目前系統中存在的 HID 集合（Collections）。由於此掃描會向裝置查詢字串描述符，因此僅在「按需讀取（On-demand reading）」時執行。
+1. `HidInventory.Scan` 列舉目前系統中存在的 HID 集合（Collections）。由於此掃描會向裝置查詢字串描述符，因此僅在「按需讀取（On-demand reading）」時執行。
 
-2\. `ProviderRegistry` 將已知的 `VID:PID` 配對分派給對應的 Provider。獨立運作的 Provider（如 XInput、藍牙，以及需要主動發送查詢的品牌）則會自行從同一份清單中探索所屬裝置。
+2. `ProviderRegistry` 將已知的 `VID:PID` 配對分派給對應的 Provider。獨立運作的 Provider（如 XInput、藍牙，以及需要主動發送查詢的品牌）則會自行從同一份清單中探索所屬裝置。
 
-3\. 每個 Provider 皆會回傳一個 `BatteryReading` 結構：包含百分比數值、粗略電量等級、「充電中」狀態，或附帶原因說明的「無資料」。
+3. 每個 Provider 皆會回傳一個 `BatteryReading` 結構：包含百分比數值、粗略電量等級、「充電中」狀態，或附帶原因說明的「無資料」。
 
-4\. 沒有對應 Provider 的裝置會被標示為「不支援（unsupported）」，這類裝置不會從清單消失，也絕不會顯示猜測的電量數值。
+4. 沒有對應 Provider 的裝置會被標示為「不支援（unsupported）」，這類裝置不會從清單消失，也絕不會顯示猜測的電量數值。
 
-5\. 每個裝置最後一次成功讀取的數值會快取於磁碟中；當後續讀取回傳空值時，介面會顯示該快取數值並附上經過時間。
+5. 每個裝置最後一次成功讀取的數值會快取於磁碟中；當後續讀取回傳空值時，介面會顯示該快取數值並附上經過時間。
 
 
 
-\## 按需讀取與兩項即時資料來源
+## 按需讀取與兩項即時資料來源
 
 
 
@@ -70,9 +70,9 @@ tools/diag/        診斷工具與自動化自我測試（Self-test）
 
 
 
-\- \*\*被動監聽（Passive listening）\*\*（適用於 Attack Shark、Rapoo）：僅開啟單一 HID 控制代碼（Handle），接收裝置主動發送的資料報告。若監聽器中斷，不會在按需讀取之外的時間點自動重新開啟。
+- **被動監聽（Passive listening）**（適用於 Attack Shark、Rapoo）：僅開啟單一 HID 控制代碼（Handle），接收裝置主動發送的資料報告。若監聽器中斷，不會在按需讀取之外的時間點自動重新開啟。
 
-\- \*\*藍牙（Bluetooth）\*\*：Joule 每 60 秒重新讀取一次 Windows 已儲存在裝置節點中的電量百分比，完全不會透過無線電波發送額外封包。
+- **藍牙（Bluetooth）**：Joule 每 60 秒重新讀取一次 Windows 已儲存在裝置節點中的電量百分比，完全不會透過無線電波發送額外封包。
 
 
 
@@ -84,17 +84,17 @@ tools/diag/        診斷工具與自動化自我測試（Self-test）
 
 
 
-必須向裝置發送查詢指令才能取得電量的 Provider，一律透過 `Interop/HidRequest.cs` 執行——這是整個專案中唯一會對裝置進行寫入操作的模組。該模組會拒絕存取系統滑鼠與鍵盤集合、每次僅發送一筆查詢並等待回應，且單次工作階段最多限制發送 48 筆查詢。詳細規範請參閱 \[SECURITY.md](../SECURITY.md)。
+必須向裝置發送查詢指令才能取得電量的 Provider，一律透過 `Interop/HidRequest.cs` 執行——這是整個專案中唯一會對裝置進行寫入操作的模組。該模組會拒絕存取系統滑鼠與鍵盤集合、每次僅發送一筆查詢並等待回應，且單次工作階段最多限制發送 48 筆查詢。詳細規範請參閱 [SECURITY.md](../SECURITY.md)。
 
 
 
-\## 資料儲存、安裝與更新
+## 資料儲存、安裝與更新
 
 
 
-\- 應用程式資料儲存於 `%LOCALAPPDATA%\\Joule\\` 目錄下，包含 `settings.json`（設定檔）、`state.json`（快取狀態）與 `joule.log`（紀錄檔）。
+- 應用程式資料儲存於 `%LOCALAPPDATA%\\Joule\\` 目錄下，包含 `settings.json`（設定檔）、`state.json`（快取狀態）與 `joule.log`（紀錄檔）。
 
-\- 安裝程式與自動更新機制採用 \[Velopack](https://github.com/velopack/velopack)。應用程式會在啟動時及每小時檢查一次 GitHub Releases。
+- 安裝程式與自動更新機制採用 [Velopack](https://github.com/velopack/velopack)。應用程式會在啟動時及每小時檢查一次 GitHub Releases。
 
-\- 防止重複啟動：若嘗試開啟第二個程式執行個體，它會通知正在執行的主程式顯示面板並隨即結束。
+- 防止重複啟動：若嘗試開啟第二個程式執行個體，它會通知正在執行的主程式顯示面板並隨即結束。
 
