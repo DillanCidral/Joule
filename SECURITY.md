@@ -1,8 +1,8 @@
-\# 安全性與隱私權
+# 安全性與隱私權
 
 
 
-\[English](SECURITY.md) · \[Português](SECURITY.pt-BR.md)
+[English](SECURITY.en.md) · [Português](SECURITY.pt-BR.md)
 
 
 
@@ -10,7 +10,7 @@ Joule 會與您日常依賴的硬體裝置進行通訊。在開發初期，一�
 
 
 
-\## 程式碼強制執行的安全規則
+## 程式碼強制執行的安全規則
 
 
 
@@ -48,31 +48,31 @@ Joule 會與您日常依賴的硬體裝置進行通訊。在開發初期，一�
 
 
 
-\## Joule 會向裝置傳送什麼資料
+## Joule 會向裝置傳送什麼資料
 
 
 
-\- \*\*僅限被動監聽\*\*：Attack Shark、Rapoo、Incott、DualSense、XInput 控制器與藍牙裝置（藍牙裝置僅讀取 Windows 系統記錄的數值，不會透過無線電波發送任何封包）。
+- **僅限被動監聽**：Attack Shark、Rapoo、Incott、DualSense、XInput 控制器與藍牙裝置（藍牙裝置僅讀取 Windows 系統記錄的數值，不會透過無線電波發送任何封包）。
 
-\- \*\*主動查詢電量\*\*：Logitech、Razer、SteelSeries、HyperX、Corsair、採用 Compx 通訊協定的品牌（ATK、VXE、VGN、Pulsar、Dareu）及部分其他品牌。程式僅發送讀取電量的查詢指令，絕不會傳送任何更改硬體設定的指令。
+- **主動查詢電量**：Logitech、Razer、SteelSeries、HyperX、Corsair、採用 Compx 通訊協定的品牌（ATK、VXE、VGN、Pulsar、Dareu）及部分其他品牌。程式僅發送讀取電量的查詢指令，絕不會傳送任何更改硬體設定的指令。
 
-\- 需要反覆發送查詢直到兩次回應一致的通訊協定，已基於安全原則刻意排除支援。
-
-
-
-\## 隱私權保護
+- 需要反覆發送查詢直到兩次回應一致的通訊協定，已基於安全原則刻意排除支援。
 
 
 
-\- 無遙測（Telemetry）、無帳號系統、無任何後端伺服器。唯一的網路連線僅用於更新器檢查 GitHub Releases 是否有新版本。
-
-\- Joule 僅會將資料寫入 `%LOCALAPPDATA%\\Joule\\` 目錄：`settings.json`（設定檔）、`state.json`（各裝置最後電量快取）與 `joule.log`（紀錄檔）。
-
-\- \*\*回報我的裝置（Send my device）\*\* 會在移除序號、藍牙位址、電腦名稱、使用者名稱以及非周邊類型的藍牙裝置（手機、喇叭、車載系統）後，將 `.txt` 報告儲存於 `%LOCALAPPDATA%\\Joule\\envios\\`。您可以在送出前親自檢視檔案內容，並自行決定是否寄出。請注意，透過 GitHub Issue 提交的內容為公開資訊。
+## 隱私權保護
 
 
 
-\## 若裝置出現異常行為
+- 無遙測（Telemetry）、無帳號系統、無任何後端伺服器。唯一的網路連線僅用於更新器檢查 GitHub Releases 是否有新版本。
+
+- Joule 僅會將資料寫入 `%LOCALAPPDATA%\\Joule\\` 目錄：`settings.json`（設定檔）、`state.json`（各裝置最後電量快取）與 `joule.log`（紀錄檔）。
+
+- **回報我的裝置（Send my device）** 會在移除序號、藍牙位址、電腦名稱、使用者名稱以及非周邊類型的藍牙裝置（手機、喇叭、車載系統）後，將 `.txt` 報告儲存於 `%LOCALAPPDATA%\\Joule\\envios\\`。您可以在送出前親自檢視檔案內容，並自行決定是否寄出。請注意，透過 GitHub Issue 提交的內容為公開資訊。
+
+
+
+## 若裝置出現異常行為
 
 
 
@@ -80,9 +80,9 @@ Joule 會與您日常依賴的硬體裝置進行通訊。在開發初期，一�
 
 
 
-1\. 關閉 Joule（在系統匣圖示上按右鍵 > 結束），然後重新插拔無線接收器。
+1. 關閉 Joule（在系統匣圖示上按右鍵 > 結束），然後重新插拔無線接收器。
 
-2\. 通知我們：請開啟 \[GitHub Issue](https://github.com/DillanCidral/Joule/issues) 或寄信至 dillan.apps@gmail.com，並附上裝置型號、`joule.log`（可從系統匣圖示 > 資料夾開啟）以及當時同時開啟的原廠控制軟體名稱。
+2. 通知我們：請開啟 [GitHub Issue](https://github.com/DillanCidral/Joule/issues) 或寄信至 dillan.apps@gmail.com，並附上裝置型號、`joule.log`（可從系統匣圖示 > 資料夾開啟）以及當時同時開啟的原廠控制軟體名稱。
 
 
 
@@ -90,7 +90,7 @@ Joule 會與您日常依賴的硬體裝置進行通訊。在開發初期，一�
 
 
 
-\## 回報安全性漏洞
+## 回報安全性漏洞
 
 
 
