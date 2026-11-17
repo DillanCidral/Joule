@@ -83,7 +83,7 @@ dotnet build src/BatteryTray -c Debug
 dotnet run --project src/BatteryTray -- --demo
 ```
 
-`--demo` 參數可顯示模擬的範例裝置，不會存取任何實體硬體。更多開發細節請參閱 [CONTRIBUTING.zh-TW.md](CONTRIBUTING.zh-TW.md) 與 [docs/architecture.zh-TW.md](docs/architecture.zh-TW.md)。
+`--demo` 參數可顯示模擬的範例裝置，不會存取任何實體硬體。更多開發細節請參閱 [CONTRIBUTING.md](CONTRIBUTING.md) 與 [docs/architecture.md](docs/architecture.md)。
 
 ## 致謝
 
