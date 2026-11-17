@@ -9,7 +9,7 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/licen%C3%A7a-AGPL--3.0-FFC21F?labelColor=1D1B18" alt="Licença: AGPL-3.0"></a>
 </p>
 
-<p align="center"><a href="README.zh-TW.md">🇭🇰 繁體中文</a> · <a href="README.md"><img src="docs/images/bandeira-us.png" alt="" height="14"> English</a> · <img src="docs/images/bandeira-br.png" alt="" height="14"> <strong>Português</strong> · <a href="README.fr.md"><img src="docs/images/bandeira-fr.png" alt="" height="14"> Français</a> · <a href="README.ru.md"><img src="docs/images/bandeira-ru.png" alt="" height="14"> Русский</a></p>
+<p align="center"><a href="README.md">🇭🇰 繁體中文</a> · <a href="README.en.md"><img src="docs/images/bandeira-us.png" alt="" height="14"> English</a> · <img src="docs/images/bandeira-br.png" alt="" height="14"> <strong>Português</strong> · <a href="README.fr.md"><img src="docs/images/bandeira-fr.png" alt="" height="14"> Français</a> · <a href="README.ru.md"><img src="docs/images/bandeira-ru.png" alt="" height="14"> Русский</a></p>
 
 <p align="center">
   <a href="https://github.com/DillanCidral/Joule/releases/latest/download/JouleApp-win-Setup.exe"><img src="https://img.shields.io/badge/Baixar_para_Windows-FFC21F?style=for-the-badge" alt="Baixar para Windows" height="40"></a>
