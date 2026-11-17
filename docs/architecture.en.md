@@ -1,6 +1,6 @@
 # Architecture
 
-[Português](arquitetura.md)
+[Português](arquitetura.md) · [zh-TW](arquitetura.md)
 
 Joule is a single self-contained `win-x64` executable (.NET 8, WPF) that runs
 without administrator rights.
