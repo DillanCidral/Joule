@@ -1,6 +1,6 @@
 # Contributing
 
-[Português](CONTRIBUTING.pt-BR.md)·[zh-TW](CONTRIBUTING.md)
+[Português](CONTRIBUTING.pt-BR.md) · [zh-TW](CONTRIBUTING.md)
 
 The most useful contribution is a device: either a capture from
 **Send my device** (no code needed) or a provider you wrote
