@@ -1,4 +1,4 @@
-<h1 align="center"><img src="docs/images/capa-zh.png" alt="Joule" width="100%"></h1>
+<h1 align="center"><img src="docs/images/capa.png" alt="Joule" width="100%"></h1>
 
 <p align="center"><strong>在 Windows 系統匣中隨時掌握你的無線滑鼠、耳機、控制器與鍵盤電量。</strong></p>
 
@@ -15,7 +15,7 @@
   <a href="https://github.com/DillanCidral/Joule/releases/latest/download/JouleApp-win-Setup.exe"><img src="https://img.shields.io/badge/Download_for_Windows-FFC21F?style=for-the-badge" alt="Download for Windows" height="40"></a>
 </p>
 
-<p align="center"><img src="docs/images/joule-zh.png" alt="Joule panel and edge widget, dark theme" width="85%"></p>
+<p align="center"><img src="docs/images/joule.png" alt="Joule panel and edge widget, dark theme" width="85%"></p>
 Joule 是一款常駐於 Windows 11 系統匣的小型應用程式，能即時顯示所有無線周邊裝置的剩餘電量。本軟體完全免費、開放原始碼，目前處於 **Beta 測試階段**。
 
 ## 主要功能
