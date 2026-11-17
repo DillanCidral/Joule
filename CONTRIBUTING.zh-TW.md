@@ -2,7 +2,7 @@
 
 
 
-\[English](CONTRIBUTING.md) · \[Português](CONTRIBUTING.pt-BR.md)
+\[English](CONTRIBUTING-en.md) · \[Português](CONTRIBUTING.pt-BR.md)
 
 
 
