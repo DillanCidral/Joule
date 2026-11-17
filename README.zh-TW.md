@@ -1,6 +1,6 @@
 <h1 align="center"><img src="docs/images/capa.png" alt="Joule" width="100%"></h1>
 
-<p align="center"><strong>Battery for your wireless mouse, headset, controller and keyboard, in the Windows tray.</strong></p>
+<p align="center"><strong>在 Windows 系統匣中隨時掌握你的無線滑鼠、耳機、控制器與鍵盤電量。</strong></p>
 
 <p align="center">
   <a href="https://github.com/DillanCidral/Joule/releases/latest"><img src="https://img.shields.io/github/v/release/DillanCidral/Joule?color=FFC21F&labelColor=1D1B18" alt="Latest release"></a>
@@ -9,13 +9,7 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-AGPL--3.0-FFC21F?labelColor=1D1B18" alt="License: AGPL-3.0"></a>
 </p>
 
-<p align="center">
-  <a href="README.zh-TW.md"><strong>繁體中文</strong></a> · 
-  <img src="docs/images/bandeira-us.png" alt="" height="14"> <strong>English</strong> · 
-  <a href="README.pt-BR.md"><img src="docs/images/bandeira-br.png" alt="" height="14"> Português</a> · 
-  <a href="README.fr.md"><img src="docs/images/bandeira-fr.png" alt="" height="14"> Français</a> · 
-  <a href="README.ru.md"><img src="docs/images/bandeira-ru.png" alt="" height="14"> Русский</a>
-</p>
+<p align="center">🇭🇰 <strong>繁體中文</strong> · <a href="README.md"><img src="docs/images/bandeira-us.png" alt="" height="14"> English</a> · <a href="README.pt-BR.md"><img src="docs/images/bandeira-br.png" alt="" height="14"> Português</a> · <a href="README.fr.md"><img src="docs/images/bandeira-fr.png" alt="" height="14"> Français</a> · <a href="README.ru.md"><img src="docs/images/bandeira-ru.png" alt="" height="14"> Русский</a></p>
 
 <p align="center">
   <a href="https://github.com/DillanCidral/Joule/releases/latest/download/JouleApp-win-Setup.exe"><img src="https://img.shields.io/badge/Download_for_Windows-FFC21F?style=for-the-badge" alt="Download for Windows" height="40"></a>
