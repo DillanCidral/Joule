@@ -62,7 +62,7 @@ dotnet run --project src/BatteryTray -- --demo
 
 
 
-- 請先詳閱 \[SECURITY.md](SECURITY.md)。任何包含無窮讀取迴圈、開啟系統滑鼠或鍵盤集合，或是在 `Interop/HidRequest.cs` 以外之處對裝置進行寫入操作的變更，皆不會被合併。
+- 請先詳閱 [SECURITY.md](SECURITY.md)。任何包含無窮讀取迴圈、開啟系統滑鼠或鍵盤集合，或是在 `Interop/HidRequest.cs` 以外之處對裝置進行寫入操作的變更，皆不會被合併。
 
 - 手邊沒有實體硬體可供測試？請在提交時明確說明，該裝置將會被標記為「尚未實機測試（not tested）」並列入支援清單。
 
