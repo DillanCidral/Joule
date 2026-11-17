@@ -27,6 +27,7 @@ quer dizer que ele manda a pergunta de bateria uma vez por leitura (veja o
 | Zaopin ZPW MAX (8K) | receptor `3554:F527` | pergunta | Percentual confirmado no aparelho real |
 | AULA F75 | cabo `258A:010C` | presença | Mostra "no cabo", sem inventar um percentual |
 | AJAZZ 2.4G 8K | receptor GearHub-V5 `3151:402D` | pergunta | Estado `F7` do receptor; percentual confirmado no aparelho real |
+| ATK A9 Ultra V2 | receptor 8K NANO `373B:11FE` | pergunta | Percentual confirmado no aparelho real. Mouse dormindo não responde; mexa nele e a próxima leitura pega |
 
 ## Confirmados por usuários
 
