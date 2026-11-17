@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <a href="README.zh-TW.md"><strong>繁體中文</strong></a> · 
+  <a href="README.md"><strong>繁體中文</strong></a> · 
   <img src="docs/images/bandeira-us.png" alt="" height="14"> <strong>English</strong> · 
   <a href="README.pt-BR.md"><img src="docs/images/bandeira-br.png" alt="" height="14"> Português</a> · 
   <a href="README.fr.md"><img src="docs/images/bandeira-fr.png" alt="" height="14"> Français</a> · 
