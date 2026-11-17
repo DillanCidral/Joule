@@ -2,7 +2,7 @@
 
 
 
-[English](architecture.md) · [Português](arquitetura.md)
+[English](architecture.en.md) · [Português](arquitetura.md)
 
 
 
