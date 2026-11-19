@@ -12,11 +12,12 @@ one door for writing to a device (`linux/crates/joule-hid/src/request.rs`).
 | Window (libadwaita) with the Joule rings, settings and about dialogs | works, checked on GNOME (light and dark) |
 | Top bar item with the pill icon and a menu listing every device | works (needs the AppIndicator extension on GNOME) |
 | Notices (desktop notification) and sounds (sound theme through `canberra-gtk-play`) | works |
+| Batteries the kernel publishes (`/sys/class/power_supply`, scope Device): Logitech behind a receiver, DualSense, Bluetooth LE | works, read first, sysfs only (G703 checked); a receiver the kernel covers is not asked over HID++ |
 | Hardware arrival and removal (kernel uevents), settle 1.5 s, at most one reading per 10 s | works, checked by replugging a dongle |
 | Logitech headsets G533, G535, G633/G635, G933/G935, G733, G PRO, G PRO X, G PRO X 2 | G933 checked on hardware, the rest from the documented bytes |
-| Logitech receivers (Unifying, Bolt, Lightspeed, Nano) | Lightspeed checked on hardware (G703) |
+| Logitech receivers (Unifying, Bolt, Lightspeed, Nano) over HID++ | only when the kernel does not report the device; Lightspeed checked on hardware (G703) |
 | Other brands (Attack Shark, Rapoo, DualSense, Razer, SteelSeries, HyperX, Corsair, Compx, ...) | **not ported yet**: listed as "unsupported" |
-| Bluetooth (BlueZ / UPower) | **not ported yet** |
+| Bluetooth devices the kernel does not publish (BlueZ / UPower) | **not ported yet** |
 | Edge widget, tinted glass, updater, onboarding and "what's new" screens | left out: Wayland cannot dock a window to an edge or blur behind it; Linux has no updater |
 | A GNOME Shell drop-down in the top bar (the real counterpart of the Windows flyout) | planned; needs `mutter-devkit` to test in a nested shell |
 

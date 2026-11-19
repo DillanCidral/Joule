@@ -499,9 +499,19 @@ impl StandaloneProvider for LogitechReceiverProvider {
             .collect();
         // Each receiver has one short collection (0xFF00/0x0001, report 0x10). Long replies arrive on
         // collection 0x0002 of the same receiver: all are listened to, the questions go one at a time.
+        // A receiver whose paired device the kernel already reports is not asked again.
+        let kernel_roots =
+            crate::kernel_power_supply::covered_hid_roots(&crate::kernel_power_supply::scan());
         let mut shorts: Vec<&HidCollection> = mine
             .iter()
             .filter(|c| c.usage_page == 0xFF00 && c.usage == 0x0001 && c.output_len >= 7)
+            .filter(|c| {
+                !crate::kernel_power_supply::is_covered(
+                    std::path::Path::new("/sys"),
+                    &c.path,
+                    &kernel_roots,
+                )
+            })
             .collect();
         if shorts.is_empty() {
             return Vec::new();

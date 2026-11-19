@@ -27,6 +27,8 @@ impl Registry {
 
     pub fn create_default() -> Self {
         Self::new(vec![
+            // The kernel first (DillanCidral/Joule#174): it only reads sysfs.
+            Box::new(crate::kernel_power_supply::KernelProvider),
             Box::new(crate::logitech_headset::LogitechHeadsetProvider),
             Box::new(crate::logitech_receiver::LogitechReceiverProvider::default()),
         ])
