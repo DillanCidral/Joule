@@ -1,0 +1,21 @@
+[package]
+name = "joule"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[[bin]]
+name = "joule"
+path = "src/main.rs"
+
+[dependencies]
+joule-core.workspace = true
+joule-hid.workspace = true
+joule-providers.workspace = true
+serde_json.workspace = true
+libc.workspace = true
+gtk.workspace = true
+adw.workspace = true
+ksni.workspace = true
+async-channel.workspace = true
