@@ -32,6 +32,7 @@ quer dizer que cada consulta do protocolo é enviada uma vez por leitura (veja o
 | ATK A9 Ultra V2 | receptor 8K NANO `373B:11FE` | pergunta | Percentual confirmado no aparelho real. Mouse dormindo não responde; mexa nele e a próxima leitura pega |
 | ATK 1K DONGLE-PAW (`373B:10F0`) | dongle | pergunta | Uma consulta de bateria por leitura, independente do ATK HUB. O receptor pode indicar carregamento mesmo sem cabo |
 | ATK Mercury I / M1 (`373B:107C`) | dongle | pergunta | Receptor `0005`, fone `0007`. Três consultas conferem versão, estrutura e percentual. Estado de carregamento pendente |
+| ASUS ROG Pelta | receptor 2.4 GHz `0B05:1B84` | pergunta | Nível e se está carregando; percentual confirmado no aparelho real. Feche o Armoury Crate, que usa o mesmo canal |
 
 ### Leitura dos aparelhos ATK conferidos
 

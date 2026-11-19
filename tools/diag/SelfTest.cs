@@ -137,6 +137,21 @@ internal static partial class SelfTest
         }).Single();
         Check("aula wired shows cable state without inventing a percent", aulaWired.Reading is { Status: ReadingStatus.Charging, Percent: null } && aulaWired.Origin == "Cabo");
 
+        // --- ROG Pelta: only the two read questions (CC 12 07 level, CC 12 08 charging). ---
+        Check("pelta battery request CC 12 07", RogPeltaProvider.BuildRequest(0x07) is [0xCC, 0x12, 0x07]);
+        var peltaBattery = new byte[64]; peltaBattery[0] = 0xCC; peltaBattery[1] = 0x12; peltaBattery[2] = 0x07; peltaBattery[6] = 83;
+        Eq("pelta battery 83%", 83, RogPeltaProvider.ParseLevel(peltaBattery));
+        var peltaHigh = (byte[])peltaBattery.Clone(); peltaHigh[6] = 101;
+        Check("pelta out-of-range level rejected", RogPeltaProvider.ParseLevel(peltaHigh) is null);
+        var peltaErr = (byte[])peltaBattery.Clone(); peltaErr[5] = 0xFF; peltaErr[6] = 0xAA;
+        Check("pelta FF AA error rejected", RogPeltaProvider.ParseLevel(peltaErr) is null);
+        var peltaWrong = (byte[])peltaBattery.Clone(); peltaWrong[2] = 0x08;
+        Check("pelta reply to another command rejected", RogPeltaProvider.ParseLevel(peltaWrong) is null);
+        Check("pelta short reply rejected", RogPeltaProvider.ParseLevel(B(0xCC, 0x12, 0x07)) is null);
+        var peltaCharge = new byte[64]; peltaCharge[0] = 0xCC; peltaCharge[1] = 0x12; peltaCharge[2] = 0x08; peltaCharge[5] = 1;
+        Check("pelta charging flag", RogPeltaProvider.ParseCharging(peltaCharge));
+        Check("pelta owns only its receiver", new RogPeltaProvider().Handles(0x0B05, 0x1B84) && !new RogPeltaProvider().Handles(0x0B05, 0x1B85));
+
         // Confirmacao: o pico de um relatorio so (80, 90, 80 -- visto no log de 2026-10-22) nao troca o valor.
         var conf = new PassiveReportListener("t", _ => false, r => r[0], confirmReports: 2);
         conf.OnReport(B(80));

@@ -54,6 +54,7 @@ public sealed class ProviderRegistry
             new HyperXProvider(),
             new CorsairProvider(),
             new AulaF75Provider(),
+            new RogPeltaProvider(),
             new CompxProvider(),
             new AtkMouseProvider(),
             new MercuryProvider(),
