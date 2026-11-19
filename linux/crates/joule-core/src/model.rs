@@ -21,6 +21,23 @@ pub struct BatteryReading {
     pub detail: Option<String>,
     pub observed_unix: Option<i64>,
     pub charge_text: Option<String>,
+    /// Charging or full, when the device says so.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub charge_state: Option<ChargeState>,
+    /// The percent comes from the battery voltage. While charging the voltage sits higher than the
+    /// charge, so the reading service estimates the level instead (see `charge.rs`).
+    #[serde(skip_serializing_if = "std::ops::Not::not")]
+    pub voltage_based: bool,
+    /// Level from a measured charging curve, used when nothing is known from before the charge.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub charge_curve_percent: Option<u8>,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub enum ChargeState {
+    Charging,
+    Full,
 }
 
 impl BatteryReading {
@@ -32,6 +49,9 @@ impl BatteryReading {
             detail,
             observed_unix: None,
             charge_text: None,
+            charge_state: None,
+            voltage_based: false,
+            charge_curve_percent: None,
         }
     }
     pub fn percentage(percent: i32, detail: Option<String>, charge_text: Option<String>) -> Self {
@@ -217,6 +237,7 @@ mod tests {
             level: None,
             charging: false,
             timestamp_unix: 1,
+            ..Default::default()
         }
     }
 

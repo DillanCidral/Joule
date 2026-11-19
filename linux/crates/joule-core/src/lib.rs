@@ -1,5 +1,6 @@
 pub mod alerts;
 pub mod cache;
+pub mod charge;
 pub mod curve;
 pub mod known;
 pub mod l;
@@ -10,4 +11,6 @@ pub mod paths;
 pub mod settings;
 pub mod turns;
 
-pub use model::{BatteryReading, DeviceEntry, DeviceKind, ReadingStatus, compare_for_display};
+pub use model::{
+    BatteryReading, ChargeState, DeviceEntry, DeviceKind, ReadingStatus, compare_for_display,
+};

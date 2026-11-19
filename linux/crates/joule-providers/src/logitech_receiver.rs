@@ -14,7 +14,7 @@
 //! a sleeping device makes the receiver answer with an error at once, without bothering the device.
 
 use crate::registry::StandaloneProvider;
-use joule_core::{BatteryReading, DeviceEntry, curve::interpolate, known, l::t, log};
+use joule_core::{BatteryReading, ChargeState, DeviceEntry, curve::interpolate, known, l::t, log};
 use joule_hid::{
     HidCollection,
     gate::{Gate, is_vendor},
@@ -207,7 +207,13 @@ pub fn parse_unified(d: &[u8]) -> BatteryReading {
         _ => None,
     };
     if (1..=100).contains(&d[0]) {
-        return BatteryReading::percentage(i32::from(d[0]), None, charge);
+        let mut r = BatteryReading::percentage(i32::from(d[0]), None, charge);
+        r.charge_state = match d[2] {
+            1 | 2 => Some(ChargeState::Charging),
+            3 => Some(ChargeState::Full),
+            _ => None,
+        };
+        return r;
     }
     match d[1] & 0x0F {
         8.. => BatteryReading::coarse("FULL"),
@@ -252,17 +258,28 @@ pub fn parse_voltage(d: &[u8]) -> BatteryReading {
             &format!("voltage out of range ({mv} mV)"),
         ));
     }
-    let charge = if d[2] & 0x80 == 0 {
-        None
-    } else if d[2] & 0x03 == 1 {
-        Some(t("carga completa", "fully charged"))
-    } else {
-        Some(t("carregando", "charging"))
-    };
+    // flags: bit 7 charging, low two bits 1 = full (Solaar, decipher_battery_voltage)
+    if d[2] & 0x80 != 0 && d[2] & 0x03 == 1 {
+        let mut full =
+            BatteryReading::percentage(100, None, Some(t("carga completa", "fully charged")));
+        full.charge_state = Some(ChargeState::Full);
+        return full;
+    }
+    if d[2] & 0x80 != 0 {
+        // The voltage under charge is not the charge: the reading service estimates it.
+        let mut c = BatteryReading::percentage(
+            percent_from_millivolts(mv),
+            Some(t("estimado durante a carga", "estimated while charging")),
+            Some(t("carregando", "charging")),
+        );
+        c.charge_state = Some(ChargeState::Charging);
+        c.voltage_based = true;
+        return c;
+    }
     BatteryReading::percentage(
         percent_from_millivolts(mv),
         Some(t("estimado pela tensao", "estimated from voltage")),
-        charge,
+        None,
     )
 }
 
@@ -702,7 +719,15 @@ mod tests {
         assert_eq!(r.percent, Some(60));
         assert_eq!(r.charge_text, None);
         assert!(parse_voltage(&[0x0F, 0x00, 0x80]).charge_text.is_some());
-        assert_eq!(parse_voltage(&[0x0F, 0x00, 0x81]).percent, Some(60));
+        assert_eq!(
+            parse_voltage(&[0x0F, 0x00, 0x81]).percent,
+            Some(100),
+            "charging + full flag"
+        );
+        assert!(
+            parse_voltage(&[0x0F, 0x00, 0x80]).voltage_based,
+            "charging: the service estimates"
+        );
         assert_eq!(
             parse_voltage(&[0x0B, 0xB7, 0]).status,
             ReadingStatus::NoData,

@@ -304,6 +304,7 @@ mod tests {
             level: None,
             charging: false,
             timestamp_unix: at,
+            ..Default::default()
         }
     }
     fn no_wait(_: &str) -> Option<String> {

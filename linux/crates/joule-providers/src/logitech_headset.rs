@@ -2,7 +2,7 @@
 //! Format documented by HeadsetControl (lib/devices/logitech_*.hpp); the code is written independently.
 //! Reply: [4..5] millivolts big-endian, [6] == 3 means charging, [2] == 0xFF/0x8F means the headset is off.
 
-use joule_core::{BatteryReading, DeviceEntry, DeviceKind, curve::interpolate, l::t};
+use joule_core::{BatteryReading, ChargeState, DeviceEntry, DeviceKind, curve::interpolate, l::t};
 use joule_hid::{
     HidCollection,
     gate::{Gate, can_ask},
@@ -162,20 +162,81 @@ pub fn handles(pid: u16) -> bool {
 }
 
 /// `None` = headset off (the dongle answers FF/8F in place of the feature index) or an implausible voltage.
-pub fn parse_headset(r: &[u8], curve: &[(i32, i32)]) -> Option<BatteryReading> {
+/// G933/G935 charging curve, measured by g933-utils (MIT, ash lea; `libg933/src/maps/0A5B/
+/// charging_ascending.csv`, reduced to 24 points). Used only when nothing is known from before a charge.
+pub const CHARGE_CURVE_G933: [(i32, i32); 24] = [
+    (4292, 92),
+    (4275, 90),
+    (4250, 88),
+    (4225, 85),
+    (4200, 82),
+    (4175, 79),
+    (4150, 75),
+    (4125, 71),
+    (4100, 67),
+    (4075, 62),
+    (4050, 57),
+    (4025, 52),
+    (4000, 45),
+    (3985, 39),
+    (3975, 33),
+    (3965, 26),
+    (3950, 21),
+    (3925, 16),
+    (3900, 12),
+    (3880, 8),
+    (3870, 6),
+    (3850, 5),
+    (3750, 2),
+    (3600, 0),
+];
+
+/// The measured charging curve of a model, when there is one.
+pub fn charge_curve_for(pid: u16) -> Option<&'static [(i32, i32)]> {
+    matches!(pid, 0x0A5B | 0x0A87).then_some(&CHARGE_CURVE_G933[..])
+}
+
+/// Battery status byte [6]: 1 discharging, 3 charging, 7 full (g933-utils, `BatteryStatus::from_bytes`).
+pub fn parse_headset(
+    r: &[u8],
+    curve: &[(i32, i32)],
+    charge_curve: Option<&[(i32, i32)]>,
+) -> Option<BatteryReading> {
     if r.len() < 7 || matches!(r[2], 0xFF | 0x8F) {
         return None;
     }
     let mv = ((r[4] as i32) << 8) | r[5] as i32;
-    if mv < curve[curve.len() - 1].0 || mv > 4500 {
+    // The charger lifts the voltage up to about 4.5 V: allow it while charging.
+    let top = if r[6] == 0x03 { 4700 } else { 4500 };
+    if mv < curve[curve.len() - 1].0 || mv > top {
         return None;
     }
-    let charge = (r[6] == 0x03).then(|| t("carregando", "charging"));
-    Some(BatteryReading::percentage(
-        interpolate(mv, curve),
-        Some(t("estimado pela tensão", "estimated from voltage")),
-        charge,
-    ))
+    let mut reading = match r[6] {
+        0x07 => {
+            let mut full =
+                BatteryReading::percentage(100, None, Some(t("carga completa", "fully charged")));
+            full.charge_state = Some(ChargeState::Full);
+            full
+        }
+        0x03 => {
+            let mut c = BatteryReading::percentage(
+                interpolate(mv, curve),
+                Some(t("estimado durante a carga", "estimated while charging")),
+                Some(t("carregando", "charging")),
+            );
+            c.charge_state = Some(ChargeState::Charging);
+            c.voltage_based = true;
+            c.charge_curve_percent = charge_curve.map(|cc| interpolate(mv, cc).clamp(0, 100) as u8);
+            c
+        }
+        _ => BatteryReading::percentage(
+            interpolate(mv, curve),
+            Some(t("estimado pela tensão", "estimated from voltage")),
+            None,
+        ),
+    };
+    reading.observed_unix = None;
+    Some(reading)
 }
 
 /// True when `r` answers our question: the battery reply itself, or the dongle's error echo of it
@@ -242,7 +303,7 @@ pub fn read_headsets(gate: &Arc<Gate>, collections: &[HidCollection]) -> Vec<Dev
                                 session.ask(target, &request, |r| is_answer(r, spec), ASK_TIMEOUT);
                             match reply {
                             None => no_answer(gate, target),
-                            Some(r) => parse_headset(&r, spec.curve).unwrap_or_else(|| {
+                            Some(r) => parse_headset(&r, spec.curve, charge_curve_for(pid)).unwrap_or_else(|| {
                                 BatteryReading::no_data(t(
                                     "fone desligado ou longe do receptor; ligue e atualize",
                                     "headset off or far from the receiver; turn it on and refresh",
@@ -294,29 +355,29 @@ mod tests {
     fn real_g933_log_line_discharging() {
         // ~/.cache/battery-indicator.log: raw=11ff080a0da0010000000000 -> 3488 mV, status 1
         let raw = [0x11, 0xFF, 0x08, 0x0A, 0x0D, 0xA0, 0x01, 0, 0, 0, 0, 0];
-        let r = parse_headset(&raw, CURVE).unwrap();
+        let r = parse_headset(&raw, CURVE, None).unwrap();
         assert_eq!(r.percent, Some(10));
         assert_eq!(r.charge_text, None);
     }
     #[test]
     fn charging_adds_text() {
-        let r = parse_headset(&reply(0x08, 4150, 3), CURVE).unwrap();
+        let r = parse_headset(&reply(0x08, 4150, 3), CURVE, None).unwrap();
         assert_eq!(r.percent, Some(100));
         assert!(r.charge_text.is_some());
     }
     #[test]
     fn headset_off_is_none() {
-        assert!(parse_headset(&reply(0xFF, 3800, 1), CURVE).is_none());
-        assert!(parse_headset(&reply(0x8F, 3800, 1), CURVE).is_none());
+        assert!(parse_headset(&reply(0xFF, 3800, 1), CURVE, None).is_none());
+        assert!(parse_headset(&reply(0x8F, 3800, 1), CURVE, None).is_none());
     }
     #[test]
     fn out_of_range_voltage_is_none() {
-        assert!(parse_headset(&reply(0x08, 3100, 1), CURVE).is_none()); // below the 3150 floor
-        assert!(parse_headset(&reply(0x08, 4600, 1), CURVE).is_none());
+        assert!(parse_headset(&reply(0x08, 3100, 1), CURVE, None).is_none()); // below the 3150 floor
+        assert!(parse_headset(&reply(0x08, 4600, 1), CURVE, None).is_none());
     }
     #[test]
     fn short_reply_is_none() {
-        assert!(parse_headset(&[0x11, 0xFF, 0x08, 0x0A, 0x0D], CURVE).is_none());
+        assert!(parse_headset(&[0x11, 0xFF, 0x08, 0x0A, 0x0D], CURVE, None).is_none());
     }
     #[test]
     fn answer_filter_accepts_reply_and_own_error_only() {
@@ -348,5 +409,36 @@ mod tests {
         );
         assert!(spec_for(0x0001).is_none());
         assert!(handles(0x0A5B));
+    }
+
+    #[test]
+    fn charging_is_flagged_for_an_estimate_with_the_measured_curve() {
+        let r = parse_headset(&reply(0x08, 4100, 3), CURVE, charge_curve_for(0x0A5B)).unwrap();
+        assert_eq!(r.charge_state, Some(ChargeState::Charging));
+        assert!(r.voltage_based);
+        assert_eq!(
+            r.charge_curve_percent,
+            Some(67),
+            "g933-utils: 4100 mV while charging is about 67%"
+        );
+    }
+    #[test]
+    fn the_charger_voltage_above_4_5_v_is_accepted_while_charging() {
+        // real G933 log: 4497 mV, state 0x03
+        let r = parse_headset(&reply(0x08, 4497, 3), CURVE, charge_curve_for(0x0A5B)).unwrap();
+        assert_eq!(r.charge_curve_percent, Some(92));
+    }
+    #[test]
+    fn status_7_is_full() {
+        // real G933 log: mV=3941 state=0x07
+        let r = parse_headset(&reply(0x08, 3941, 7), CURVE, None).unwrap();
+        assert_eq!(r.percent, Some(100));
+        assert_eq!(r.charge_state, Some(ChargeState::Full));
+    }
+    #[test]
+    fn only_the_g933_family_has_a_charging_curve() {
+        assert!(charge_curve_for(0x0A5B).is_some());
+        assert!(charge_curve_for(0x0A87).is_some());
+        assert!(charge_curve_for(0x0AB5).is_none());
     }
 }

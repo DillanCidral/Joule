@@ -1,12 +1,12 @@
 use crate::{
     log,
-    model::{BatteryReading, ReadingStatus},
+    model::{BatteryReading, ChargeState, ReadingStatus},
     paths,
 };
 use serde::{Deserialize, Serialize};
 use std::{collections::BTreeMap, path::Path};
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CachedReading {
     pub display_name: String,
@@ -15,6 +15,16 @@ pub struct CachedReading {
     pub level: Option<String>,
     pub charging: bool,
     pub timestamp_unix: i64,
+    /// Last percent read while not charging, and when: where a charge estimate starts.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub discharge_percent: Option<u8>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub discharge_unix: Option<i64>,
+    /// The running charge estimate: the percent and the time it started from.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub charge_start_percent: Option<u8>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub charge_start_unix: Option<i64>,
 }
 
 impl CachedReading {
@@ -45,18 +55,41 @@ impl ReadingCache {
         if !matches!(reading.status, ReadingStatus::Ok | ReadingStatus::Charging) {
             return;
         }
-        self.items.insert(
-            key.to_string(),
-            CachedReading {
-                display_name: display_name.to_string(),
-                hardware_id: hardware_id.to_string(),
-                percent: reading.percent,
-                level: reading.level.clone(),
-                charging: reading.status == ReadingStatus::Charging
-                    || reading.charge_text.is_some(),
-                timestamp_unix: reading.observed_unix.unwrap_or(now_unix),
-            },
-        );
+        let previous = self.items.get(key).cloned().unwrap_or_default();
+        let charging = reading.status == ReadingStatus::Charging
+            || reading.charge_state == Some(ChargeState::Charging)
+            || (reading.charge_text.is_some() && reading.charge_state != Some(ChargeState::Full));
+        let at = reading.observed_unix.unwrap_or(now_unix);
+        let mut entry = CachedReading {
+            display_name: display_name.to_string(),
+            hardware_id: hardware_id.to_string(),
+            percent: reading.percent,
+            level: reading.level.clone(),
+            charging,
+            timestamp_unix: at,
+            ..previous.clone()
+        };
+        if charging {
+            // keep where the charge started; the reading service sets it (set_charge_start)
+        } else {
+            entry.discharge_percent = reading.percent.or(previous.discharge_percent);
+            entry.discharge_unix = if reading.percent.is_some() {
+                Some(at)
+            } else {
+                previous.discharge_unix
+            };
+            entry.charge_start_percent = None;
+            entry.charge_start_unix = None;
+        }
+        self.items.insert(key.to_string(), entry);
+    }
+
+    /// Remembers where the running charge estimate started (`None` clears it).
+    pub fn set_charge_start(&mut self, key: &str, start: Option<(u8, i64)>) {
+        if let Some(e) = self.items.get_mut(key) {
+            e.charge_start_percent = start.map(|s| s.0);
+            e.charge_start_unix = start.map(|s| s.1);
+        }
     }
 
     pub fn load_from(dir: &Path) -> ReadingCache {

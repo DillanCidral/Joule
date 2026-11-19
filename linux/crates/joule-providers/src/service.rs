@@ -4,15 +4,19 @@
 
 use crate::registry::Registry;
 use joule_core::{
-    BatteryReading, DeviceEntry, DeviceKind, ReadingStatus,
+    BatteryReading, ChargeState, DeviceEntry, DeviceKind, ReadingStatus,
     alerts::{LowBatteryAlert, LowBatteryTracker},
     cache::ReadingCache,
-    compare_for_display, known,
+    charge, compare_for_display, known,
     l::t,
     log,
     settings::Settings,
 };
 use joule_hid::{HidCollection, gate::Gate};
+/// Typical time from empty to full for the Logitech devices Joule reads by voltage. HeadsetControl
+/// assumes the same two hours for its time-to-full estimate (`requestBatteryHIDPP`).
+pub const FULL_CHARGE_MINUTES: f64 = 120.0;
+
 use std::{
     collections::{BTreeMap, HashSet},
     path::PathBuf,
@@ -284,6 +288,37 @@ impl ReadingService {
             .evaluate(&result.devices, self.settings.low_battery_threshold)
     }
 
+    /// A voltage-based reading of a charging device: replace the voltage percent (the charger lifts
+    /// the voltage) by the estimate of `joule_core::charge`. Returns where the estimate starts.
+    fn estimate_charge(&self, entry: &mut DeviceEntry, now: i64) -> Option<(u8, i64)> {
+        if entry.reading.charge_state != Some(ChargeState::Charging) || !entry.reading.voltage_based
+        {
+            return None;
+        }
+        let previous = self.cache.get(&entry.key);
+        let est = charge::estimate(
+            previous.as_ref(),
+            entry.reading.charge_curve_percent,
+            now,
+            FULL_CHARGE_MINUTES,
+        );
+        match est.percent {
+            Some(p) => {
+                entry.reading.percent = Some(p);
+                entry.reading.charge_text = Some(t("carregando, estimado", "charging, estimated"));
+            }
+            None => {
+                // Nothing to start from: say "charging" without inventing a number.
+                entry.reading = BatteryReading::charging(Some(t(
+                    "carregando; o nível aparece depois de uma leitura fora do carregador",
+                    "charging; the level shows after a reading off the charger",
+                )));
+                entry.reading.charge_state = Some(ChargeState::Charging);
+            }
+        }
+        est.start
+    }
+
     fn run_providers(
         &mut self,
         asked: &[HidCollection],
@@ -294,6 +329,7 @@ impl ReadingService {
         let _ = everything;
         for provider in self.registry.standalone() {
             for mut entry in provider.discover(&self.gate, asked) {
+                let start = self.estimate_charge(&mut entry, now_unix());
                 self.cache.update(
                     &entry.key,
                     &entry.display_name,
@@ -301,6 +337,11 @@ impl ReadingService {
                     &entry.reading,
                     now_unix(),
                 );
+                if entry.reading.charge_state == Some(ChargeState::Charging)
+                    && entry.reading.voltage_based
+                {
+                    self.cache.set_charge_start(&entry.key, start);
+                }
                 entry.cache = self.cache.get(&entry.key);
                 seen.insert(entry.key.clone());
                 log::write(&format!(
@@ -606,5 +647,38 @@ mod tests {
         s.low_battery_threshold = 30;
         r.svc.set_settings(s);
         assert_eq!(r.svc.low_battery_alerts(&out).len(), 1);
+    }
+
+    #[test]
+    fn a_charging_voltage_does_not_jump_to_the_voltage_percent() {
+        let mut r = rig(vec![headset("/dev/hidraw5")]);
+        *r.reading.lock().unwrap() = BatteryReading::percentage(14, None, None);
+        r.svc.refresh();
+        // plugged in: the voltage curve would say 92 %
+        let mut charging = BatteryReading::percentage(100, None, Some("charging".into()));
+        charging.charge_state = Some(ChargeState::Charging);
+        charging.voltage_based = true;
+        charging.charge_curve_percent = Some(92);
+        *r.reading.lock().unwrap() = charging;
+        let out = r.svc.refresh();
+        assert_eq!(
+            out.devices[0].reading.percent,
+            Some(14),
+            "starts from the last level off the charger"
+        );
+        let c = out.devices[0].cache.clone().unwrap();
+        assert_eq!(c.charge_start_percent, Some(14));
+        assert_eq!(c.discharge_percent, Some(14));
+    }
+    #[test]
+    fn charging_without_history_uses_the_curve_or_shows_no_number() {
+        let mut r = rig(vec![headset("/dev/hidraw5")]);
+        let mut charging = BatteryReading::percentage(100, None, Some("charging".into()));
+        charging.charge_state = Some(ChargeState::Charging);
+        charging.voltage_based = true;
+        *r.reading.lock().unwrap() = charging.clone();
+        let out = r.svc.refresh();
+        assert_eq!(out.devices[0].reading.percent, None, "no invented number");
+        assert_eq!(out.devices[0].reading.status, ReadingStatus::Charging);
     }
 }

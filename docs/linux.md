@@ -20,6 +20,17 @@ one door for writing to a device (`linux/crates/joule-hid/src/request.rs`).
 | Edge widget, tinted glass, updater, onboarding and "what's new" screens | left out: Wayland cannot dock a window to an edge or blur behind it; Linux has no updater |
 | A GNOME Shell drop-down in the top bar (the real counterpart of the Windows flyout) | planned; needs `mutter-devkit` to test in a nested shell |
 
+## Battery level while charging
+
+Many Logitech devices only report their battery voltage, and a charger lifts that voltage at once:
+a G933 reads 4.3 to 4.5 V a minute after it is plugged in, which a discharge curve calls "100%".
+Joule estimates the level instead, like Logitech's own software: it starts from the last level read
+off the charger and adds charge over time at a typical two-hour full charge, never above 99% until the
+device reports "full" (status 7 on the G933, the full flag of feature 0x1001). With nothing known from
+before the charge, the G933/G935 use the charging curve measured by g933-utils; other devices then show
+"charging" without a number. Devices that report their own percentage (feature 0x1004 or 0x1000) are
+shown as they report. Readings stay on demand: refresh to update the estimate.
+
 ## Install (Fedora 44)
 
 ```bash
