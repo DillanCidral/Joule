@@ -18,12 +18,6 @@ fn f(fill: &str) -> Icon {
         stroke: None,
     }
 }
-fn s(stroke: &str) -> Icon {
-    Icon {
-        fill: None,
-        stroke: Some(stroke.into()),
-    }
-}
 fn fs(fill: String, stroke: &str) -> Icon {
     Icon {
         fill: Some(fill),
@@ -109,51 +103,6 @@ pub fn plug() -> Icon {
             cap(7.9, 4.0, 4.2, 1.2)
         ),
         "M10 15.4V18",
-    )
-}
-pub fn refresh() -> Icon {
-    s("M16.25 10a6.25 6.25 0 1 1-1.83-4.42M14.5 2.75v3h-3")
-}
-pub fn spinner() -> Icon {
-    s("M16 10a6 6 0 1 1-6-6")
-}
-pub fn sliders() -> Icon {
-    fs(
-        format!("{}{}", cap(4.5, 4.5, 6.0, 4.0), cap(9.5, 11.5, 6.0, 4.0)),
-        "M3 6.5h14M3 13.5h14",
-    )
-}
-pub fn chevron() -> Icon {
-    s("M5 8l5 5 5-5")
-}
-pub fn back() -> Icon {
-    s("M12.5 4.5 7 10l5.5 5.5")
-}
-pub fn clock() -> Icon {
-    f(
-        "M10 3a7 7 0 1 1 0 14a7 7 0 1 1 0-14zM9.25 6.25a0.75 0.75 0 0 1 1.5 0V9.6l2.1 1.3a0.75 0.75 0 0 1-0.8 1.3l-2.45-1.5a0.75 0.75 0 0 1-0.35-0.65z",
-    )
-}
-pub fn bolt() -> Icon {
-    f("M11.4 2.2 5.2 11.4h4.6l-1.2 6.4 6.2-9.2h-4.6z")
-}
-pub fn folder() -> Icon {
-    f(
-        "M2.75 6.25a1.75 1.75 0 0 1 1.75-1.75h3.25l1.75 2h6a1.75 1.75 0 0 1 1.75 1.75v5.5a1.75 1.75 0 0 1-1.75 1.75h-11a1.75 1.75 0 0 1-1.75-1.75z",
-    )
-}
-pub fn chevron_right() -> Icon {
-    s("M7.5 4.5 13 10l-5.5 5.5")
-}
-pub fn info() -> Icon {
-    f(&format!(
-        "M10 3a7 7 0 1 1 0 14a7 7 0 1 1 0-14zM9.25 9.25h1.5v4.5h-1.5z{}",
-        dot(10.0, 6.6, 0.9)
-    ))
-}
-pub fn external() -> Icon {
-    s(
-        "M11.5 4.5h4v4M15.5 4.5l-6 6M13.5 11.5v2.5a1.5 1.5 0 0 1-1.5 1.5H6a1.5 1.5 0 0 1-1.5-1.5V8A1.5 1.5 0 0 1 6 6.5h2.5",
     )
 }
 
@@ -515,25 +464,7 @@ mod tests {
     }
     #[test]
     fn all_icons_parse_to_something() {
-        for icon in [
-            mouse(),
-            keyboard(),
-            headset(),
-            gamepad(),
-            generic(),
-            plug(),
-            refresh(),
-            spinner(),
-            sliders(),
-            chevron(),
-            back(),
-            clock(),
-            bolt(),
-            folder(),
-            chevron_right(),
-            info(),
-            external(),
-        ] {
+        for icon in [mouse(), keyboard(), headset(), gamepad(), generic(), plug()] {
             let n = icon
                 .fill
                 .iter()

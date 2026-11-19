@@ -1,20 +1,19 @@
-//! GTK4 / libadwaita panel, tray and notifications.
+//! The GNOME app: a libadwaita window with the Joule rings, settings and about dialogs, the top bar
+//! item and notifications.
 
-mod about_view;
+mod about;
 mod autostart;
-mod bar;
 mod fonts;
 mod icons;
-mod kit;
-mod panel_view;
 mod pill;
+mod prefs;
 mod ring;
-mod settings_view;
+mod rows;
 mod sound;
+mod style;
 mod submission;
 mod theme;
 mod tray;
-mod widget_view;
 mod window;
 
 pub use window::run;

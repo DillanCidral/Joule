@@ -9,16 +9,16 @@ one door for writing to a device (`linux/crates/joule-hid/src/request.rs`).
 
 | Piece | State |
 |---|---|
-| Panel (list, settings, about) in the Joule design | works, checked on GNOME |
+| Window (libadwaita) with the Joule rings, settings and about dialogs | works, checked on GNOME (light and dark) |
 | Top bar item with the pill icon and a menu listing every device | works (needs the AppIndicator extension on GNOME) |
-| Floating widget with rings (opt-in in Settings) | works; Wayland cannot pin it to a screen edge |
 | Notices (desktop notification) and sounds (sound theme through `canberra-gtk-play`) | works |
 | Hardware arrival and removal (kernel uevents), settle 1.5 s, at most one reading per 10 s | works, checked by replugging a dongle |
 | Logitech headsets G533, G535, G633/G635, G933/G935, G733, G PRO, G PRO X, G PRO X 2 | G933 checked on hardware, the rest from the documented bytes |
 | Logitech receivers (Unifying, Bolt, Lightspeed, Nano) | Lightspeed checked on hardware (G703) |
 | Other brands (Attack Shark, Rapoo, DualSense, Razer, SteelSeries, HyperX, Corsair, Compx, ...) | **not ported yet**: listed as "unsupported" |
 | Bluetooth (BlueZ / UPower) | **not ported yet** |
-| Edge docking, blur behind the window, updater, onboarding and "what's new" screens | not available or not ported on Linux |
+| Edge widget, tinted glass, updater, onboarding and "what's new" screens | left out: Wayland cannot dock a window to an edge or blur behind it; Linux has no updater |
+| A GNOME Shell drop-down in the top bar (the real counterpart of the Windows flyout) | planned; needs `mutter-devkit` to test in a nested shell |
 
 ## Install (Fedora 44)
 
@@ -26,6 +26,7 @@ one door for writing to a device (`linux/crates/joule-hid/src/request.rs`).
 sudo dnf install gcc gtk4-devel libadwaita-devel systemd-devel dbus-devel
 cargo install --path linux/crates/joule --locked --root ~/.local
 install -Dm644 linux/packaging/io.github.dillancidral.Joule.desktop ~/.local/share/applications/io.github.dillancidral.Joule.desktop
+install -Dm644 linux/packaging/icons/io.github.dillancidral.Joule.png ~/.local/share/icons/hicolor/256x256/apps/io.github.dillancidral.Joule.png
 # only if your user cannot open /dev/hidraw* yet (often already allowed by the desktop ACL):
 sudo install -m644 linux/packaging/99-joule.rules /etc/udev/rules.d/ && sudo udevadm control --reload && sudo udevadm trigger
 ```
@@ -54,7 +55,7 @@ question. Data lives in `~/.local/share/joule/` (`settings.json`, `state.json`, 
 ```bash
 cd linux
 cargo fmt --check && cargo clippy --workspace --all-targets -- -D warnings && cargo test --workspace
-JOULE_SNAPSHOT=/tmp/shots joule --panel     # writes main/settings/about/widget PNGs of the real window, then quits
+JOULE_SNAPSHOT=/tmp/shots joule --panel     # writes main/settings/about PNGs of the real window, then quits
 joule --udev-rules > packaging/99-joule.rules   # regenerate the rule after adding a device
 ```
 

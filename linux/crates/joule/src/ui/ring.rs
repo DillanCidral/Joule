@@ -165,22 +165,23 @@ pub fn draw_ring(
     }
 }
 
-/// The ring as a widget, 32 x 32.
-pub fn ring_widget(spec: RingSpec, look: Look, pal: Palette) -> gtk::DrawingArea {
+/// The ring as a widget of `size` pixels; the glyph takes the widget's text colour, a bit dimmed.
+pub fn ring_widget(spec: RingSpec, size: i32, look: Look, pal: Palette) -> gtk::DrawingArea {
     let area = gtk::DrawingArea::new();
-    area.set_content_width(32);
-    area.set_content_height(32);
+    area.set_content_width(size);
+    area.set_content_height(size);
     area.set_valign(gtk::Align::Center);
-    area.add_css_class("t-secondary");
     area.set_draw_func(move |a, cr, w, h| {
         let c = a.color();
         let fg = (
             f64::from(c.red()),
             f64::from(c.green()),
             f64::from(c.blue()),
-            f64::from(c.alpha()),
+            f64::from(c.alpha()) * 0.75,
         );
-        cr.translate((f64::from(w) - 32.0) / 2.0, (f64::from(h) - 32.0) / 2.0);
+        let side = f64::from(w.min(h));
+        cr.translate((f64::from(w) - side) / 2.0, (f64::from(h) - side) / 2.0);
+        cr.scale(side / 32.0, side / 32.0);
         draw_ring(cr, 32.0, &spec, &look, &pal, fg);
     });
     area
