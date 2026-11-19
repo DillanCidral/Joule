@@ -1,0 +1,13 @@
+[package]
+name = "joule-providers"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+joule-core.workspace = true
+joule-hid.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true

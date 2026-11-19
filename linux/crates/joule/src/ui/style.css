@@ -1,0 +1,67 @@
+/* Joule skin, ported from the Windows app (Theme.cs): ember yellow on cards, red only for low battery. */
+
+@define-color accent_bg_color #FFC21F;
+@define-color accent_fg_color #161616;
+@define-color accent_color #FFC21F;
+
+.joule-title { font-weight: 600; font-size: 16px; }
+
+.joule-card {
+  background: alpha(@window_fg_color, 0.06);
+  border-radius: 14px;
+  padding: 14px 16px;
+}
+.joule-card.joule-dim { background: alpha(@window_fg_color, 0.04); }
+
+.joule-tile {
+  background: alpha(@window_fg_color, 0.08);
+  border-radius: 10px;
+  min-width: 44px;
+  min-height: 44px;
+}
+.joule-tile.joule-small { min-width: 34px; min-height: 34px; border-radius: 8px; }
+
+.joule-name { font-weight: 500; font-size: 15px; }
+.joule-sub { font-size: 12px; color: alpha(@window_fg_color, 0.65); }
+.joule-sub image { opacity: 0.8; }
+.joule-ember { color: #FFC21F; }
+
+.joule-pct { font-size: 26px; font-weight: 600; }
+.joule-unit { font-size: 14px; font-weight: 500; color: alpha(@window_fg_color, 0.7); }
+.joule-pct.joule-low, .joule-unit.joule-low { color: #FF99A4; }
+.joule-pct.joule-stale, .joule-unit.joule-stale { color: alpha(@window_fg_color, 0.55); }
+
+.joule-chip {
+  background: alpha(@window_fg_color, 0.1);
+  border-radius: 999px;
+  padding: 4px 14px;
+  font-weight: 600;
+}
+
+progressbar.joule-bar trough {
+  min-height: 4px;
+  border-radius: 2px;
+  background: alpha(@window_fg_color, 0.14);
+}
+progressbar.joule-bar progress {
+  min-height: 4px;
+  border-radius: 2px;
+  background-color: transparent;
+  background-image: linear-gradient(to right, #FFE38A, #FFC21F 30%, alpha(#FFC21F, 0.15));
+  border: none;
+}
+progressbar.joule-bar.joule-low progress {
+  background-image: linear-gradient(to right, #FFB3BB, #F0453A 25%, alpha(#F0453A, 0.25));
+}
+progressbar.joule-bar.joule-stale progress {
+  background-image: none;
+  background-color: alpha(@window_fg_color, 0.4);
+}
+
+.joule-seg { min-height: 4px; border-radius: 2px; background: #FFC21F; }
+.joule-seg.joule-off { background: alpha(@window_fg_color, 0.14); }
+.joule-seg.joule-low { background: #F0453A; }
+
+.joule-footer { font-size: 12px; color: alpha(@window_fg_color, 0.6); }
+.joule-others-toggle { padding: 10px 16px; border-radius: 10px; font-weight: 500; }
+.joule-section-title { font-size: 12px; font-weight: 600; color: alpha(@window_fg_color, 0.65); }

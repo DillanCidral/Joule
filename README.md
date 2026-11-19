@@ -51,6 +51,12 @@ Get `JouleApp-win-Setup.exe` with the button above or from the
 - Joule updates itself from GitHub Releases and tells you in the tray when a
   new version is ready.
 
+## Linux
+
+There is a Linux port written in Rust (Fedora 44, GNOME on Wayland): a GNOME window with the Joule rings,
+a top bar item and the same rules about reading the battery. It supports Logitech headsets and receivers
+for now. See [docs/linux.md](docs/linux.md) for what works, how to install it and how to build it.
+
 ## Supported devices
 
 | Device | Connection | Status |
