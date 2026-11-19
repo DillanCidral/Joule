@@ -95,7 +95,10 @@
                 <StackPanel Visibility="Hidden">
                     <TextBlock Style="{StaticResource Title}" Text="{ui:Tr 'O que mudou', 'What’s new'}" />
                     <TextBlock Style="{StaticResource Lead}" Margin="0,0,0,20" Text="{ui:Tr 'Nesta versão:', 'In this version:'}" />
-                    <StackPanel x:Name="ChangesList" />
+                    <!-- Rolagem: quem pula versoes recebe muitas novidades e a janela passava da tela (2026-11-17). -->
+                    <ScrollViewer x:Name="ChangesScroller" VerticalScrollBarVisibility="Auto" Margin="0,0,-14,0" Padding="0,0,14,0" Focusable="False">
+                        <StackPanel x:Name="ChangesList" />
+                    </ScrollViewer>
                 </StackPanel>
             </Grid>
         </DockPanel>

@@ -320,11 +320,12 @@ public partial class PanelWindow : Window
             ThresholdSlider.Value = _settings.LowBatteryThreshold;
             ThresholdValue.Text = $"{_settings.LowBatteryThreshold}%";
             AutostartSwitch.IsChecked = Autostart.IsEnabled();
-            LanguageAuto.IsChecked = _settings.Language is not ("pt" or "en" or "fr" or "ru");
+            LanguageAuto.IsChecked = _settings.Language is not ("pt" or "en" or "fr" or "ru" or "zh-TW");
             LanguagePt.IsChecked = _settings.Language == "pt";
             LanguageEn.IsChecked = _settings.Language == "en";
             LanguageFr.IsChecked = _settings.Language == "fr";
             LanguageRu.IsChecked = _settings.Language == "ru";
+            LanguageZhTw.IsChecked = _settings.Language == "zh-TW";
             LanguageRestart.Visibility = L.Resolve(_settings.Language) != L.Code ? Visibility.Visible : Visibility.Collapsed;
 
             var requested = Theme.Parse(_settings.Appearance);
@@ -422,6 +423,7 @@ public partial class PanelWindow : Window
         LanguageEn.Checked += (_, _) => Changed(() => _settings.Language = "en");
         LanguageFr.Checked += (_, _) => Changed(() => _settings.Language = "fr");
         LanguageRu.Checked += (_, _) => Changed(() => _settings.Language = "ru");
+        LanguageZhTw.Checked += (_, _) => Changed(() => _settings.Language = "zh-TW");
         RestartButton.Click += (_, _) => RestartRequested?.Invoke();
 
         void SetAppearance(Appearance a) => Changed(() =>
@@ -524,7 +526,7 @@ public partial class PanelWindow : Window
         FooterText.Text = _busy ? L.T("Lendo… leva até 3 s", "Reading… takes up to 3 s")
             : _last?.FatalError is { Length: > 0 } err ? L.T($"Erro na leitura: {err}", $"Reading error: {err}")
             : _last is null ? L.T("Ainda sem leitura", "No reading yet")
-            : L.T($"Última leitura às {_last.WhenUtc.ToLocalTime():HH:mm}", $"Last reading at {_last.WhenUtc.ToLocalTime():HH:mm}");
+            : L.T($"Última leitura às {_last.WhenUtc.ToLocalTime():t}", $"Last reading at {_last.WhenUtc.ToLocalTime():t}"); // :t = hora curta do Windows (12 h ou 24 h)
         LiveLegend.Visibility = main.Any(r => r.IsLive) ? Visibility.Visible : Visibility.Collapsed;
     }
 }

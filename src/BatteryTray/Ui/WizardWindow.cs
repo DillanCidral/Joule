@@ -171,7 +171,7 @@ public class WizardWindow : Window
     /// direito, 12 de folga): em tela estreita, desliza para a esquerda.
     /// Em pixels, no monitor do mouse, como o painel (SystemParameters vem na escala do login).
     /// </summary>
-    private void PlaceBesidePanel()
+    protected void PlaceBesidePanel()
     {
         var (cx, cy) = Native.CursorPos();
         var work = Native.MonitorAt(cx, cy).Work;

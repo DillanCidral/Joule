@@ -9,7 +9,7 @@ namespace BatteryTray.Diag;
 /// Existem porque essas sao exatamente as regras que impedem o app de mostrar
 /// um valor errado, e nao dependem de o hardware estar plugado.
 /// </summary>
-internal static class SelfTest
+internal static partial class SelfTest
 {
     private static int _passed;
     private static int _failed;
@@ -21,6 +21,7 @@ internal static class SelfTest
     {
         Console.WriteLine("=== self-test ===");
         Log.Silent = true; // aparelhos de mentira abaixo nao vao para o joule.log de verdade
+        RunAtkTests();
 
         // --- Cor da alca do widget: valor editado a mao no settings.json ---
         Check("alca: opcoes conhecidas e #RRGGBB passam", Settings.HandleColor("neutral") == "neutral" && Settings.HandleColor("#2dd4bf") == "#2dd4bf");
@@ -39,6 +40,10 @@ internal static class SelfTest
         Eq("shark X11 em %", 64, AttackSharkProvider.ParsePercent(B(0x03, 0x55, 0x40, 0x01, 64)));
         Null("shark X11 sem flag 01 nao vale", AttackSharkProvider.ParsePercent(B(0x03, 0x55, 0x40, 0x00, 64)));
         Eq("shark X6 em dezenas", 80, AttackSharkProvider.ParsePercent(B(0x03, 0x85, 0x40, 0x01, 8)));
+        Eq("shark V6 cheio (captura real)", 100, AttackSharkProvider.ParsePercent(B(0x03, 0x24, 0x41, 0x01, 0x64)));
+        Eq("shark V6 evento 40 em %", 64, AttackSharkProvider.ParsePercent(B(0x03, 0x24, 0x40, 0x01, 64)));
+        Null("shark V6 evento 41 so vale com 100", AttackSharkProvider.ParsePercent(B(0x03, 0x24, 0x41, 0x01, 80)));
+        Null("shark evento 41 so vale no V6", AttackSharkProvider.ParsePercent(B(0x03, 0x55, 0x41, 0x01, 100)));
         Null("shark X3 sem escala conhecida", AttackSharkProvider.ParsePercent(B(0x03, 0x4D, 0x40, 0x01, 8)));
 
         // --- AJAZZ, Rapoo VT9, Lamzu ---
@@ -189,6 +194,25 @@ internal static class SelfTest
         // A checagem que impede o pior erro: por Bluetooth vem 78 bytes com o
         // byte 53 zerado -- sem o teste de comprimento isso viraria "5%".
         Null("dualsense relatorio de bluetooth rejeitado", DualSenseProvider.ParseStatus(BluetoothReport())?.Percent);
+        // Bluetooth no modo completo (0x31, 78 bytes, byte 54): relatorio real de um envio de 2026-11-16.
+        var dsBt = Hex("31 61 7F 7E 7F 7B 00 00 01 08 00 00 00 55 C2 64 1B 06 00 04 00 00 00 5E 02 15 1F 3E FF C4 D5 A6 4B 0E 84 C0 42 21 85 DF 96 1B 84 09 09 00 00 00 00 00 8D E1 A6 4B 09 00 00 79 81 C9 0E E0 52 59 A3 00 00 00 00 00 00 00 00 00 D6 15 94 3E");
+        Eq("dualsense bluetooth 0x31 tem 78 bytes", 78, dsBt.Length);
+        Eq("dualsense bluetooth 0x31 byte 54 = 0x09 vira 95%", 95, DualSenseProvider.ParseStatus(dsBt)?.Percent);
+        Null("dualsense 0x31 curto rejeitado", DualSenseProvider.ParseStatus(dsBt[..64])?.Percent);
+
+        // --- DualShock 4: cabo 0x01 byte 30, Bluetooth 0x11 byte 32 (envios #142 e #143) ---
+        var ds4Usb = Hex("01 7F 7C 7F 81 08 00 D4 00 00 EA C6 14 06 00 07 00 0A 00 16 00 23 21 FC 06 00 00 00 00 00 18 00 00 01 FA 81 32 17 00 80 00 00 00 00 80 00 00 00 80 00 00 00 00 80 00 00 00 80 00 00 00 00 80 00");
+        Eq("dualshock4 cabo tem 64 bytes", 64, ds4Usb.Length);
+        Eq("dualshock4 cabo 0x18 = 85% carregando", 85, DualShock4Provider.ParseStatus(ds4Usb)?.Percent);
+        Check("dualshock4 cabo marca carregando", DualShock4Provider.ParseStatus(ds4Usb)?.State == DualSenseProvider.ChargeState.Charging);
+        var ds4Bt = new byte[547];
+        Hex("11 C0 00 7F 7C 7F 81 08 00 60 00 00 AF 54 12 EB FC CF 00 C1 03 BF 03 37 16 0C F1 00 00 00 00 00 08").CopyTo(ds4Bt, 0);
+        Eq("dualshock4 bluetooth 0x08 = 85%", 85, DualShock4Provider.ParseStatus(ds4Bt)?.Percent);
+        var ds4Full = (byte[])ds4Usb.Clone(); ds4Full[30] = 0x1A;
+        Eq("dualshock4 cabo nivel 10 = 100% completa", 100, DualShock4Provider.ParseStatus(ds4Full)?.Percent);
+        ds4Full[30] = 0x1B;
+        Null("dualshock4 nivel 11 rejeitado", DualShock4Provider.ParseStatus(ds4Full)?.Percent);
+        Null("dualshock4 relatorio basico do bluetooth rejeitado", DualShock4Provider.ParseStatus(WithId(new byte[547], 0x01))?.Percent);
 
         // --- XInput: WIRED tem de ser descartado (8BitDo reporta WIRED/FULL falso) ---
         var wired = XInputProvider.MapBattery(XInputNative.BATTERY_TYPE_WIRED, 3, 0x2DC8, 0x310A);
@@ -299,6 +323,8 @@ internal static class SelfTest
         Check("24AE:1871 -> Rapoo", registry.Resolve(0x24AE, 0x1871)?.Name == "Rapoo");
         Check("1532:057A -> BlackShark", registry.Resolve(0x1532, 0x057A)?.Name == "BlackShark");
         Check("054C:0CE6 -> DualSense", registry.Resolve(0x054C, 0x0CE6)?.Name == "DualSense");
+        Check("054C:05C4 -> DualShock 4", registry.Resolve(0x054C, 0x05C4)?.Name == "DualShock 4");
+        Check("054C:09CC -> DualShock 4", registry.Resolve(0x054C, 0x09CC)?.Name == "DualShock 4");
         Check("desconhecido nao resolve", registry.Resolve(0x0951, 0x16B7) is null);
         Check("headset sem provider", registry.Resolve(0x291D, 0x385D) is null);
 
@@ -665,6 +691,9 @@ internal static class SelfTest
             && Changes.Since("99.0.0").Count == 0 && Changes.Since("").Count == Changes.All.Length);
         Check("novidades: toda novidade tem versao valida e as duas linguas",
             Changes.All.All(c => Version.TryParse(c.Version, out _) && c.TitleEn.Length > 0 && c.TextEn.Length > 0));
+        Check("novidades: importante aparece por mais uma atualizacao, e so uma",
+            Changes.All.Where(c => c.Important).All(c => Changes.Since(c.Version).Contains(c) && !Changes.Since(Version.Parse(c.Version) is var v ? new Version(v.Major, v.Minor, v.Build + 1).ToString() : "").Contains(c))
+            && Changes.All.Where(c => !c.Important).All(c => !Changes.Since(c.Version).Contains(c)));
         Check("apoio: link so do Stripe (ou vazio, sem botao)",
             BatteryTray.Ui.AppInfo.SupportUrl.Length == 0 || BatteryTray.Ui.AppInfo.SupportUrl.StartsWith("https://buy.stripe.com/", StringComparison.Ordinal));
 
@@ -774,6 +803,9 @@ internal static class SelfTest
         new(enumerator, BluetoothBatteryNodes.NormalizeAddress(address), name, percent, updatedUtc, connected, root);
 
     private static byte[] B(params int[] bytes) => bytes.Select(b => (byte)b).ToArray();
+
+    /// <summary>Bytes de uma amostra de captura, escritos como o relatorio mostra ("01 7F ...").</summary>
+    private static byte[] Hex(string spaced) => Convert.FromHexString(spaced.Replace(" ", ""));
 
     /// <summary>Relatorio 0x01 do DualSense no cabo: 64 bytes, status no byte 53.</summary>
     private static byte[] Ds(byte status)

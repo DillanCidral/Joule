@@ -1,3 +1,4 @@
+using System.Globalization;
 namespace BatteryTray.Core;
 
 /// <summary>Log simples em arquivo, best-effort. Nunca lanca.</summary>
@@ -24,7 +25,7 @@ public static class Log
                     try { File.Move(AppPaths.LogFile, AppPaths.LogFile + ".old", overwrite: true); } catch { }
                 }
                 File.AppendAllText(AppPaths.LogFile,
-                    $"{DateTime.Now:yyyy-MM-dd HH:mm:ss}  {message}{Environment.NewLine}");
+                    $"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture)}  {message}{Environment.NewLine}");
             }
         }
         catch { /* log nunca derruba o app */ }

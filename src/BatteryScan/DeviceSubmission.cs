@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
@@ -183,7 +184,8 @@ public static class DeviceSubmission
     {
         string dir = Path.Combine(AppPaths.DataDir, "envios");
         Directory.CreateDirectory(dir);
-        path ??= Path.Combine(dir, $"joule-aparelho-{when:yyyy-MM-dd-HHmmss}.txt");
+        // Calendario fixo: no Windows persa o nome saia "1405-08-26" (#137).
+        path ??= Path.Combine(dir, $"joule-aparelho-{when.ToString("yyyy-MM-dd-HHmmss", CultureInfo.InvariantCulture)}.txt");
         File.WriteAllText(path, content, new UTF8Encoding(encoderShouldEmitUTF8Identifier: true));
         return path;
     }

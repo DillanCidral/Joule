@@ -138,6 +138,33 @@ public sealed class HidRequest : IDisposable
 
         if (!Write(target, request)) return null;
 
+        return WaitForReply(isReply, timeout);
+    }
+
+    /// <summary>Um SetFeature cuja resposta chega na entrada interrupt da sessao, como no ATK Pixart.</summary>
+    public byte[]? AskFeature(HidCollection target, byte[] request, Func<byte[], bool> isReply, TimeSpan timeout)
+    {
+        if (!CanAsk(target) || request.Length < 2 || target.FeatureLen != request.Length || !Permitted(target)) return null;
+        if (OverCap()) return null;
+        _asks++;
+
+        while (_replies.TryTake(out _)) { }
+        Interlocked.Increment(ref _sent);
+        IntPtr handle = CreateFile(target.Path, 0, FILE_SHARE_READ | FILE_SHARE_WRITE, IntPtr.Zero, OPEN_EXISTING, 0, IntPtr.Zero);
+        if (handle == INVALID_HANDLE_VALUE) return null;
+        try
+        {
+            if (!HidD_SetFeature(handle, (byte[])request.Clone(), request.Length)) return null;
+            return WaitForReply(isReply, timeout);
+        }
+        finally
+        {
+            CloseHandle(handle);
+        }
+    }
+
+    private byte[]? WaitForReply(Func<byte[], bool> isReply, TimeSpan timeout)
+    {
         var deadline = DateTime.UtcNow + timeout;
         while (true)
         {

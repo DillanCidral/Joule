@@ -3,8 +3,7 @@ using System.Globalization;
 namespace BatteryTray.Core;
 
 /// <summary>
-/// Idioma da interface: portugues, ingles ou russo. Portugues e ingles ficam
-/// lado a lado onde usados; o russo e' aplicado pelo catalogo central.
+/// Idioma da interface: portugues, ingles, frances, russo ou chines tradicional.
 /// Decidido ao abrir o app; trocar nas Configuracoes vale ao reabrir.
 /// O log continua em portugues (e' para quem mantem o projeto, nao para quem usa).
 /// </summary>
@@ -14,18 +13,23 @@ public static class L
     public static bool En => Code == "en";
     public static bool Ru => Code == "ru";
 
-    /// <summary>"auto" segue portugues/russo do Windows; os demais usam ingles.</summary>
+    /// <summary>"auto" segue o idioma do Windows; os demais usam ingles.</summary>
     public static string Resolve(string? choice) =>
         choice switch
         {
-            "pt" or "en" or "fr" or "ru" => choice,
-            _ => CultureInfo.CurrentUICulture.TwoLetterISOLanguageName switch
-            {
-                "pt" => "pt",
-                "fr" => "fr",
-                "ru" => "ru",
-                _ => "en",
-            },
+            "pt" or "en" or "fr" or "ru" or "zh-TW" => choice,
+            _ => CultureInfo.CurrentUICulture.Name.StartsWith("zh-Hant", StringComparison.OrdinalIgnoreCase)
+                 || CultureInfo.CurrentUICulture.Name.Equals("zh-TW", StringComparison.OrdinalIgnoreCase)
+                 || CultureInfo.CurrentUICulture.Name.Equals("zh-HK", StringComparison.OrdinalIgnoreCase)
+                 || CultureInfo.CurrentUICulture.Name.Equals("zh-MO", StringComparison.OrdinalIgnoreCase)
+                ? "zh-TW"
+                : CultureInfo.CurrentUICulture.TwoLetterISOLanguageName switch
+                {
+                    "pt" => "pt",
+                    "fr" => "fr",
+                    "ru" => "ru",
+                    _ => "en",
+                },
         };
 
     public static void Set(string? choice) => Code = Resolve(choice);
@@ -35,6 +39,7 @@ public static class L
         "pt" => pt,
         "fr" => French.Of(en),
         "ru" => RussianTranslations.Translate(en),
+        "zh-TW" => TraditionalChinese.Of(en),
         _ => en,
     };
 

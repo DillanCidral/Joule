@@ -200,7 +200,7 @@ internal static class Program
     private static List<string> WriteReport(ScanReport report, ScanOptions options)
     {
         // Sem dados pessoais, como o "Mandar meu aparelho" (decidido em 2026-11-12): nome do arquivo so com data e hora.
-        string baseName = $"joulescan_{report.GeneratedLocal:yyyyMMdd-HHmmss}";
+        string baseName = $"joulescan_{report.GeneratedLocal.ToString("yyyyMMdd-HHmmss", System.Globalization.CultureInfo.InvariantCulture)}";
         var clean = ScanPrivacy.Redact(report);
 
         string text = TextReport.Render(clean);

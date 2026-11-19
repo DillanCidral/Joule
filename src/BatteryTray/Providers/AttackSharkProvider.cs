@@ -45,7 +45,10 @@ public sealed class AttackSharkProvider : IBatteryProvider, IPassiveListenerProv
         [0x55] = ("Attack Shark X11", false),
         [0x07] = ("Attack Shark X11 SE", false),
         [0x20] = ("Delux M600 Pro", false),
+        [0x24] = ("Attack Shark V6", false), // visto aqui so em 100% (03 24 41 01 64), em % direto
     };
+
+    private const byte ModelV6 = 0x24;
 
 
     private const ushort BatteryUsagePage = 0x000A;
@@ -159,8 +162,11 @@ public sealed class AttackSharkProvider : IBatteryProvider, IPassiveListenerProv
     internal static int? ParsePercent(byte[] r)
     {
         if (r.Length < BatteryReportLength) return null;
-        if (r[0] != 0x03 || r[2] != 0x40) return null;
+        if (r[0] != 0x03) return null;
         if (!Models.TryGetValue(r[1], out var model)) return null;
+        // shortcut: o V6 com a bateria cheia manda o evento 0x41 (nao 0x40) com 100; so isso vale, ate haver captura em outro nivel.
+        bool v6Full = r[1] == ModelV6 && r[2] == 0x41 && r[4] == 100;
+        if (r[2] != 0x40 && !v6Full) return null;
         if (r[1] != 0x10 && r[3] != 0x01) return null;
         if (model.Tenths) return r[4] <= 10 ? r[4] * 10 : null;
         return r[4] <= 100 ? r[4] : null;

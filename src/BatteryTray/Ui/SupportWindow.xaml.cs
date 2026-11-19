@@ -67,7 +67,12 @@ public partial class SupportWindow : WizardWindow
                           $"Joule is free and open source. If it ever saved you from {save}, {coffee}.");
         Phrase.Visibility = _hasLink ? Visibility.Visible : Visibility.Collapsed;
 
-        foreach (var c in changes) ChangesList.Children.Add(ChangeRow(c));
+        AddGroups(changes);
+        // A janela segue a tela da vez: a lista so ocupa altura na tela 2, com teto (480 px ou a tela do mouse menos marca, titulo e botoes) e rolagem;
+        // ao trocar de tela a altura muda e a janela volta ao meio. Antes, a tela 1 herdava a altura da lista inteira (2026-11-17).
+        var (cx, cy) = Native.CursorPos();
+        ChangesScroller.MaxHeight = Math.Clamp(Native.MonitorAt(cx, cy).Work.Height / VisualTreeHelper.GetDpi(this).DpiScaleY - 320, 160, 480);
+        SizeChanged += (_, e) => { if (e.HeightChanged && IsLoaded) PlaceBesidePanel(); };
         if (changes.Any(c => c.Version == Changes.ThanksVersion)) { ThanksText.Text = Changes.Thanks; ThanksText.Visibility = Visibility.Visible; }
 
         LaterButton.Click += (_, _) => Next();
@@ -92,21 +97,53 @@ public partial class SupportWindow : WizardWindow
 
     private void Next() { if (Page == 0 && _hasChanges) Go(1); else Leave(); }
 
-    private UIElement ChangeRow(Change c)
+    /// <summary>
+    /// Novidades por grupo (2026-11-17, opcao A escolhida pelo Dillan): icone no quadradinho, nome em destaque,
+    /// tipo embaixo e agradecimento na cor de destaque; os confirmados viram um item so, com os nomes.
+    /// </summary>
+    private void AddGroups(IReadOnlyList<Change> changes)
+    {
+        bool firstGroup = true;
+        foreach (var group in changes.GroupBy(c => c.Group).OrderBy(g => g.Key))
+        {
+            // Mesma pessoa traduzindo de novo a mesma lingua (En français na 0.2.1, Français revu na 0.2.2): fica so a mais nova.
+            var items = group.Key == ChangeGroup.Languages ? group.DistinctBy(c => c.Credit).ToList() : group.ToList();
+            string label = group.Key switch
+            {
+                ChangeGroup.Devices => L.T($"Aparelhos novos · {items.Count}", $"New devices · {items.Count}"),
+                ChangeGroup.Confirmed => L.T($"Confirmados por vocês · {items.Count}", $"Confirmed by you · {items.Count}"),
+                ChangeGroup.Languages => L.T("Idiomas", "Languages"),
+                _ => L.T("Ajustes", "Improvements"),
+            };
+            ChangesList.Children.Add(new TextBlock { Style = (Style)FindResource("GroupLabel"), Text = label, Margin = new Thickness(0, firstGroup ? 0 : 6, 0, 10) });
+            firstGroup = false;
+            if (group.Key == ChangeGroup.Confirmed)
+            {
+                var names = items.Select(c => c.Title).ToList();
+                string joined = names.Count == 1 ? names[0] : string.Join(", ", names.Take(names.Count - 1)) + L.T(" e ", " and ") + names[^1];
+                ChangesList.Children.Add(Row(items[0].Glyph, joined, L.T("Já estavam no Joule; agora alguém conferiu no próprio PC.", "Already in Joule; now someone checked them on their own PC."), ""));
+                continue;
+            }
+            foreach (var c in items)
+                ChangesList.Children.Add(Row(c.Glyph, c.Title, c.Group == ChangeGroup.Languages ? "" : c.Text, c.Credit));
+        }
+    }
+
+    private UIElement Row(string glyph, string title, string sub, string credit)
     {
         var dock = new DockPanel { Style = (Style)FindResource("Point") };
         var tile = new Border { Style = (Style)FindResource("TileBox") };
         tile.Child = new Viewbox
         {
             Width = 18, Height = 18,
-            Child = new System.Windows.Shapes.Path { Style = (Style)FindResource("Glyph"), Data = Geometry.Parse(c.Glyph), Stroke = (Brush)FindResource("Text.Secondary") },
+            Child = new System.Windows.Shapes.Path { Style = (Style)FindResource("Glyph"), Data = Geometry.Parse(glyph), Stroke = (Brush)FindResource("Text.Secondary") },
         };
         DockPanel.SetDock(tile, Dock.Left);
         dock.Children.Add(tile);
-        var text = new StackPanel();
-        text.Children.Add(new TextBlock { Style = (Style)FindResource("PointTitle"), Text = c.Title });
-        text.Children.Add(new TextBlock { Style = (Style)FindResource("Caption"), Text = c.Text });
-        if (c.Credit.Length > 0) text.Children.Add(new TextBlock { Style = (Style)FindResource("Caption"), Text = c.Credit, Foreground = (Brush)FindResource("Accent.Text"), Margin = new Thickness(0, 2, 0, 0) });
+        var text = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
+        text.Children.Add(new TextBlock { Style = (Style)FindResource("PointTitle"), Text = title, TextWrapping = TextWrapping.Wrap });
+        if (sub.Length > 0) text.Children.Add(new TextBlock { Style = (Style)FindResource("Caption"), Text = sub, Foreground = (Brush)FindResource("Text.Secondary") });
+        if (credit.Length > 0) text.Children.Add(new TextBlock { Style = (Style)FindResource("Caption"), Text = credit, Foreground = (Brush)FindResource("Accent.Text") });
         dock.Children.Add(text);
         return dock;
     }
@@ -114,6 +151,7 @@ public partial class SupportWindow : WizardWindow
     protected override void UpdateChrome()
     {
         bool first = Page == 0;
+        ChangesScroller.Visibility = first ? Visibility.Collapsed : Visibility.Visible;
         LaterButton.Visibility = SupportButton.Visibility = first && _hasLink ? Visibility.Visible : Visibility.Collapsed;
         NextButton.Visibility = first && !_hasLink ? Visibility.Visible : Visibility.Collapsed;
         NextButton.Content = _hasChanges ? L.T("Próximo", "Next") : "OK";

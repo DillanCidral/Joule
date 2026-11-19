@@ -22,3 +22,6 @@ out/
 
 # Dados pessoais do dono (PCs, aparelhos, enderecos Bluetooth): so neste disco
 docs/privado/
+
+# Rust (Linux)
+rust/target/

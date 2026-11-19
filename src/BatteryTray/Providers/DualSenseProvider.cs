@@ -4,48 +4,49 @@ using BatteryTray.Interop;
 namespace BatteryTray.Providers;
 
 /// <summary>
-/// Controle DualSense (PS5), SOMENTE NO CABO. SOMENTE LEITURA.
+/// Controle DualSense (PS5). SOMENTE LEITURA, sem pergunta: so le o relatorio
+/// que o controle ja manda sozinho.
 ///
-/// Formato: relatorio de entrada 0x01 com 64 bytes, do qual o byte 53 e' o
-/// status da bateria:
+/// Cabo: relatorio de entrada 0x01 com 64 bytes, status no byte 53.
+/// Bluetooth: relatorio 0x31 com 78 bytes, status no byte 54 (um byte de
+/// sequencia a mais depois do id; formato do hid-playstation do Linux, so o
+/// formato). Nos dois:
 ///     nibble baixo = nivel bruto 0..10   =&gt;  bateria = min(n * 10 + 5, 100) %
 ///     nibble alto  = estado: 0 descarregando, 1 carregando, 2 carga completa
 ///
-/// Por que so no cabo: por Bluetooth o controle nasce no modo basico e manda
-/// um 0x01 curto, sem bateria -- medido, 15579 relatorios seguidos com os
-/// bytes 10..77 zerados. O relatorio 0x31, que carrega a bateria, so comeca a
-/// sair depois de o host ESCREVER o feature report 0x05, e escrever em
-/// dispositivo e' invariante do projeto. No cabo o controle ja manda os 64
-/// bytes completos sozinho, a ~250 relatorios por segundo, sem ninguem pedir
-/// nada. Por isso aqui nao ha listener passivo: o valor chega em milissegundos,
-/// entao a leitura pontual (abre, le um relatorio, fecha) e' a mais barata e a
-/// mais estrita das duas -- manter um handle aberto num fluxo de 250 Hz seria
-/// pagar caro por um dado que o Refresh consegue na hora.
+/// Bluetooth: o controle nasce no modo basico e manda um 0x01 curto, sem
+/// bateria -- medido, 15579 relatorios seguidos com os bytes 10..77 zerados.
+/// O 0x31 so comeca a sair depois de algum programa ESCREVER o feature report
+/// 0x05, e escrever em dispositivo e' invariante do projeto. Entao o Joule le
+/// o 0x31 so quando outro programa (a Steam, por exemplo) ja ligou o modo
+/// completo -- visto num envio de 2026-11-16, byte 54 = 0x09 -- e, sem ele,
+/// segue "sem dado".
 ///
-/// O comprimento do relatorio E' a checagem que separa cabo de Bluetooth: o
-/// mesmo VID:PID aparece com 78 bytes quando vem pelo radio. Sem isso o
-/// provider leria o byte 53 zerado de um relatorio de Bluetooth e anunciaria
-/// 5% para um controle cheio.
+/// A leitura e' pontual (abre, le um relatorio, fecha): o controle manda a
+/// ~250 relatorios por segundo, o valor chega em milissegundos, e manter um
+/// handle aberto num fluxo desses seria pagar caro por um dado que o Refresh
+/// consegue na hora.
 ///
-/// Nota de calibracao: a leitura foi conferida contra um unico controle, cheio
-/// e no cabo (byte 53 = 0x29 = estado 2, nivel 9). O mapa de nibbles e' o
-/// documentado do DualSense; os estados 0 e 1 ainda nao foram vistos nesta
-/// casa (uma segunda captura deu 0x2A, estado 2 nivel 10, tambem 100%).
-/// Estados fora de 0..2 (o firmware usa 0xA/0xB/0xF para tensao e
-/// temperatura anormais) sao descartados em vez de virar percentual.
+/// O comprimento junto com o id separa cabo de Bluetooth: sem isso o provider
+/// leria o byte 53 zerado de um relatorio de Bluetooth e anunciaria 5% para
+/// um controle cheio.
+///
+/// Nota de calibracao: o cabo foi conferido contra um unico controle, cheio
+/// (byte 53 = 0x29 = estado 2, nivel 9; uma segunda captura deu 0x2A). O
+/// Bluetooth nao foi conferido aqui. Estados fora de 0..2 (o firmware usa
+/// 0xA/0xB/0xF para tensao e temperatura anormais) sao descartados em vez de
+/// virar percentual.
 /// </summary>
 public sealed class DualSenseProvider : IBatteryProvider
 {
     private const ushort Vid = 0x054C;
     private const ushort Pid = 0x0CE6;
 
-    private const ushort GamepadUsagePage = 0x0001;
-    private const ushort GamepadUsage = 0x0005;
+    internal const ushort GamepadUsagePage = 0x0001;
+    internal const ushort GamepadUsage = 0x0005;
 
-    /// <summary>Relatorio 0x01 completo, que so sai pelo cabo.</summary>
-    private const int UsbInputLen = 64;
-
-    private const int StatusByte = 53;
+    private const int UsbLen = 64;
+    private const int BtLen = 78;
 
     private static readonly TimeSpan WaitForReport = TimeSpan.FromSeconds(2);
 
@@ -57,32 +58,41 @@ public sealed class DualSenseProvider : IBatteryProvider
 
     public string DisplayName(ReadContext ctx) => "DualSense (PS5)";
 
-    public BatteryReading Read(ReadContext ctx)
-    {
-        if (!ctx.IsPresent(Vid, Pid))
-            return BatteryReading.Disconnected(L.T("controle nao esta presente", "controller not present"));
+    public BatteryReading Read(ReadContext ctx) =>
+        ReadPad(ctx, Vid, new[] { Pid }, ParseStatus, "DualSense.Read");
 
-        var usb = ctx.Find(Vid, Pid)
+    /// <summary>
+    /// Leitura comum aos controles PlayStation: prefere a colecao do cabo
+    /// (64 bytes) e cai na do Bluetooth, le um relatorio valido em ate 2 s.
+    /// </summary>
+    internal static BatteryReading ReadPad(ReadContext ctx, ushort vid, ushort[] pids,
+        Func<byte[], PadStatus?> parse, string logName)
+    {
+        var pads = pids.SelectMany(pid => ctx.Find(vid, pid))
             .Where(c => c.UsagePage == GamepadUsagePage
                         && c.Usage == GamepadUsage
-                        && c.InputLen == UsbInputLen
                         && !HidInventory.IsSystemReserved(c.UsagePage, c.Usage))
+            .OrderBy(c => c.InputLen == UsbLen ? 0 : 1)
             .ToList();
 
-        if (usb.Count == 0)
-            return BatteryReading.NoData(L.T("por Bluetooth o controle não informa bateria; ligue no cabo", "over Bluetooth the controller doesn’t report battery; plug in the cable"));
+        if (pads.Count == 0)
+            return BatteryReading.Disconnected(L.T("controle nao esta presente", "controller not present"));
 
         try
         {
-            var report = HidOneShot.WaitForReport(usb[0], r => ParseStatus(r) is not null, WaitForReport);
+            var report = HidOneShot.WaitForReport(pads[0], r => parse(r) is not null, WaitForReport);
             if (report is null)
-                return BatteryReading.NoData(L.T("nenhum relatorio valido em 2s", "no valid report in 2 s"));
+                return pads[0].InputLen == UsbLen
+                    ? BatteryReading.NoData(L.T("nenhum relatorio valido em 2s", "no valid report in 2 s"))
+                    : BatteryReading.NoData(L.T(
+                        "por Bluetooth o controle só informa a bateria quando outro programa (como a Steam) está aberto; ligue no cabo",
+                        "over Bluetooth the controller only reports battery while another app (like Steam) is open; plug in the cable"));
 
-            var status = ParseStatus(report)!.Value;
+            var status = parse(report)!.Value;
 
             // Dois controles no mesmo VID:PID colapsam numa linha so; melhor
             // dizer qual foi lido do que deixar o numero pairando sem dono.
-            string? extra = usb.Count > 1 ? L.T($"{usb.Count} controles no cabo; mostrando o primeiro", $"{usb.Count} controllers wired; showing the first") : null;
+            string? extra = pads.Count > 1 ? L.T($"{pads.Count} controles; mostrando o primeiro", $"{pads.Count} controllers; showing the first") : null;
             string? charge = status.State switch
             {
                 ChargeState.Charging => L.T("carregando", "charging"),
@@ -94,7 +104,7 @@ public sealed class DualSenseProvider : IBatteryProvider
         }
         catch (Exception ex)
         {
-            Log.Error("DualSense.Read", ex);
+            Log.Error(logName, ex);
             return BatteryReading.Error(ex.Message);
         }
     }
@@ -106,19 +116,21 @@ public sealed class DualSenseProvider : IBatteryProvider
         Full = 2,
     }
 
-    internal readonly record struct DualSenseStatus(int Percent, ChargeState State);
+    internal readonly record struct PadStatus(int Percent, ChargeState State);
 
     /// <summary>
-    /// Relatorio 0x01 de 64 bytes (so o cabo entrega esse tamanho), byte 53
-    /// dividido em nivel e estado. Devolve null se nao for esse relatorio ou
-    /// se o estado nao for um dos tres conhecidos.
+    /// 0x01 de 64 bytes (cabo, byte 53) ou 0x31 de 78 bytes (Bluetooth no modo
+    /// completo, byte 54). Devolve null para qualquer outro relatorio ou para
+    /// nivel/estado fora do conhecido.
     /// </summary>
-    internal static DualSenseStatus? ParseStatus(byte[] r)
+    internal static PadStatus? ParseStatus(byte[] r)
     {
-        if (r.Length != UsbInputLen) return null;
-        if (r[0] != 0x01) return null;
+        int at;
+        if (r.Length == UsbLen && r[0] == 0x01) at = 53;
+        else if (r.Length == BtLen && r[0] == 0x31) at = 54;
+        else return null;
 
-        byte status = r[StatusByte];
+        byte status = r[at];
         int level = status & 0x0F;
         int state = (status & 0xF0) >> 4;
 
@@ -126,6 +138,54 @@ public sealed class DualSenseProvider : IBatteryProvider
         if (state > (int)ChargeState.Full) return null;
 
         int percent = state == (int)ChargeState.Full ? 100 : Math.Min(level * 10 + 5, 100);
-        return new DualSenseStatus(percent, (ChargeState)state);
+        return new PadStatus(percent, (ChargeState)state);
+    }
+}
+
+/// <summary>
+/// Controle DualShock 4 (PS4), versoes 1 e 2. SOMENTE LEITURA, sem pergunta.
+///
+/// Cabo: relatorio 0x01 de 64 bytes, status no byte 30. Bluetooth: relatorio
+/// 0x11, status no byte 32 (o Windows entrega com o tamanho da colecao, 547).
+/// Como no DualSense, o 0x11 so sai quando outro programa ja ligou o modo
+/// completo. Formato do hid-playstation do Linux, so o formato:
+///     nibble baixo = nivel 0..10; bit 0x10 = no cabo
+///     no cabo: nivel &lt; 10 =&gt; n*10+5 % carregando; 10 =&gt; 100% completa; acima, descartado
+///     fora do cabo: min(n*10+5, 100) %
+/// Visto nos envios de 2026-11-17 (#142 no cabo: 0x18; #143 no Bluetooth: 0x08).
+/// Nao testado aqui. O adaptador sem fio 054C:0BA0 fica de fora: nao ha envio dele.
+/// </summary>
+public sealed class DualShock4Provider : IBatteryProvider
+{
+    private const ushort Vid = 0x054C;
+    private static readonly ushort[] Pids = { 0x05C4, 0x09CC };
+
+    public string Name => "DualShock 4";
+
+    public IReadOnlyList<(ushort Vid, ushort Pid)> SupportedIds { get; } = Pids.Select(p => (Vid, p)).ToArray();
+
+    public string LogicalKey(ushort vid, ushort pid) => "dualshock4:ps4";
+
+    public string DisplayName(ReadContext ctx) => "DualShock 4 (PS4)";
+
+    public BatteryReading Read(ReadContext ctx) =>
+        DualSenseProvider.ReadPad(ctx, Vid, Pids, ParseStatus, "DualShock4.Read");
+
+    internal static DualSenseProvider.PadStatus? ParseStatus(byte[] r)
+    {
+        int at;
+        if (r.Length == 64 && r[0] == 0x01) at = 30;
+        else if (r.Length >= 78 && r[0] == 0x11) at = 32;
+        else return null;
+
+        byte status = r[at];
+        int level = status & 0x0F;
+        bool cable = (status & 0x10) != 0;
+
+        if (level > 10) return null;
+        if (!cable) return new(Math.Min(level * 10 + 5, 100), DualSenseProvider.ChargeState.Discharging);
+        return level == 10
+            ? new(100, DualSenseProvider.ChargeState.Full)
+            : new(level * 10 + 5, DualSenseProvider.ChargeState.Charging);
     }
 }

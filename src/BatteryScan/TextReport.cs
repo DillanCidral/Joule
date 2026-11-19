@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text;
 
 namespace BatteryTray.Scan;
@@ -21,7 +22,7 @@ public static class TextReport
         sb.AppendLine($" sistema : {Or(r.System.OsCaption, r.System.OsVersion)}  {r.System.Architecture}");
         sb.AppendLine($" tipo    : {(r.System.HasSystemBattery ? "notebook (tem bateria interna)" : "desktop (sem bateria interna)")}");
         sb.AppendLine($" runtime : {r.System.DotNet}");
-        sb.AppendLine($" gerado  : {r.GeneratedLocal:yyyy-MM-dd HH:mm:ss} (local)");
+        sb.AppendLine(CultureInfo.InvariantCulture, $" gerado  : {r.GeneratedLocal:yyyy-MM-dd HH:mm:ss} (local)");
         if (r.ReportedDevices is { Count: > 0 } named)
             sb.AppendLine($" nao aparecem: {string.Join(", ", named)}");
         sb.AppendLine();
@@ -168,7 +169,7 @@ public static class TextReport
                 string state = d.Connected ? "CONECTADO" : d.Paired ? "pareado  " : "conhecido";
                 sb.AppendLine($"    [{state}] {Or(d.Name, "(sem nome)"),-32} {d.Address}  {d.DeviceKind}");
                 if (d.LastUsedUtc is { } used)
-                    sb.AppendLine($"                usado pela ultima vez: {used.ToLocalTime():yyyy-MM-dd HH:mm}");
+                    sb.AppendLine(CultureInfo.InvariantCulture, $"                usado pela ultima vez: {used.ToLocalTime():yyyy-MM-dd HH:mm}");
             }
         }
 

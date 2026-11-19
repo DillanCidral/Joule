@@ -59,8 +59,10 @@ public static class ProvidersScan
     /// Os aparelhos de uma leitura que ja aconteceu. Dentro do Joule e' isto que
     /// entra no relatorio: ler de novo so para o arquivo repetiria perguntas.
     /// </summary>
-    public static IEnumerable<ProviderReadInfo> From(IEnumerable<DeviceEntry> devices) =>
-        devices.Select(device => new ProviderReadInfo
+    public static IEnumerable<ProviderReadInfo> From(IEnumerable<DeviceEntry> devices, Func<string, string?>? waitingVid = null)
+    {
+        waitingVid ??= HidRequest.WaitingVid;
+        return devices.Select(device => new ProviderReadInfo
         {
             DisplayName = device.DisplayName,
             HardwareId = device.HardwareId,
@@ -70,6 +72,10 @@ public static class ProvidersScan
                 : device.EffectivePercent is int p ? $"{p}%"
                 : device.EffectiveLevel is { Length: > 0 } lvl ? lvl
                 : "--",
-            Detail = device.Reading.Detail,
+            // Sem licenca nada foi perguntado: o "nao respondeu" do provider enganaria a analise (HyperX da #24).
+            Detail = device.ShowsAsOther && waitingVid(device.HardwareId) is not null
+                ? L.T("marca sem licença para perguntar a bateria; nada foi enviado ao aparelho", "brand not allowed to ask for battery; nothing was sent to the device")
+                : device.Reading.Detail,
         });
+    }
 }

@@ -1,5 +1,6 @@
 using System.Runtime.InteropServices;
 using System.Text;
+using BatteryTray.Core;
 
 namespace BatteryTray.Scan;
 
@@ -28,6 +29,16 @@ internal static class ScanSelfTest
         Eq("BLUETOOTH_DEVICE_INFO tem 560 bytes", 560, Marshal.SizeOf<ScanNative.BLUETOOTH_DEVICE_INFO>());
         Eq("BLUETOOTH_DEVICE_SEARCH_PARAMS tem 40 bytes", 40, Marshal.SizeOf<ScanNative.BLUETOOTH_DEVICE_SEARCH_PARAMS>());
         Eq("SYSTEMTIME tem 16 bytes", 16, Marshal.SizeOf<ScanNative.SYSTEMTIME>());
+
+        // --- envio: marca sem licenca diz isso, nao "nao respondeu" (HyperX da #24) ---
+        var semLicenca = new DeviceEntry { Key = "h", DisplayName = "Fone", HardwareId = "03F0:08BE", IsConnected = true,
+            Reading = BatteryReading.NoData("didn't answer; turn the device on and refresh") };
+        var lido = new DeviceEntry { Key = "m", DisplayName = "Mouse", HardwareId = "03F0:0001", IsConnected = true,
+            Reading = BatteryReading.Percentage(50) };
+        var linhas = ProvidersScan.From(new[] { semLicenca, lido }, id => id.StartsWith("03F0") ? "03F0" : null).ToList();
+        Check("envio: marca sem licenca diz que nada foi enviado", linhas[0].Detail is { } d && (d.Contains("licença") || d.Contains("allowed")));
+        Check("envio: aparelho com valor nao ganha o aviso", linhas[1].Detail is null || !(linhas[1].Detail!.Contains("licença") || linhas[1].Detail!.Contains("allowed")));
+        Check("envio: sem marca esperando, o motivo do provider fica", ProvidersScan.From(new[] { semLicenca }, _ => null).Single().Detail!.Contains("didn't answer"));
 
         // --- usages de bateria ---
         Check("page 0x06 usage 0x20 e' bateria", HidUsages.BatteryUsage(0x0006, 0x0020) is not null);
@@ -237,6 +248,12 @@ internal static class ScanSelfTest
         };
         var brands = ProvidersScan.BrandsThatAsk(present, registry);
         Check("jouleScan: Razer pede licenca uma vez, Attack Shark (so escuta) nao", brands.Count == 1 && brands[0].Vid == "1532");
+        var atkMouse = new BatteryTray.Interop.HidCollection { Path = "mouse", Vid = 0x373B, Pid = 0x10F0 };
+        var mercury = new BatteryTray.Interop.HidCollection { Path = "headset", Vid = 0x373B, Pid = 0x107C };
+        var mouseBrands = ProvidersScan.BrandsThatAsk(new[] { atkMouse }, registry);
+        Check("jouleScan: mouse ATK direto pede permissao", mouseBrands.Count == 1 && mouseBrands[0].Vid == "373B");
+        var atkBrands = ProvidersScan.BrandsThatAsk(new[] { atkMouse, mercury }, registry);
+        Check("jouleScan: Mercury pede permissao 373B", atkBrands.Count == 1 && atkBrands[0].Vid == "373B");
 
         Check("PC nao e' periferico", !ScanPrivacy.IsPeripheral(0x10010C));
         Check("gamepad e' periferico", ScanPrivacy.IsPeripheral(0x002508));

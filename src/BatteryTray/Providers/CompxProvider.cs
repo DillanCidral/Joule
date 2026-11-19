@@ -116,6 +116,7 @@ public sealed class CompxProvider : IStandaloneProvider
         [(0x373B, 0x11F6)] = "ATK U2 Mini 2.0",
         [(0x373B, 0x11F7)] = "ATK U2 Ultra Max 2.0",
         [(0x373B, 0x11F9)] = "VXE R1 Ultra",
+        [(0x373B, 0x11FE)] = "ATK A9 Ultra V2", // fora do catalogo do OpenMouse; conferido no aparelho real (receptor 8K NANO)
         [(0x373B, 0x1201)] = "ATK Z1 Ultimate 2.0",
         [(0x373B, 0x120A)] = "ATK A9 Air",
         [(0x373B, 0x120B)] = "ATK X1 EXTREME GT",

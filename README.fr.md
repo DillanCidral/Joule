@@ -9,7 +9,7 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/licence-AGPL--3.0-FFC21F?labelColor=1D1B18" alt="Licence : AGPL-3.0"></a>
 </p>
 
-<p align="center"><img src="docs/images/bandeira-fr.png" alt="" height="14"> <strong>Français</strong> · <a href="README.md"><img src="docs/images/bandeira-us.png" alt="" height="14"> English</a> · <a href="README.pt-BR.md"><img src="docs/images/bandeira-br.png" alt="" height="14"> Português</a> · <a href="README.ru.md"><img src="docs/images/bandeira-ru.png" alt="" height="14"> Русский</a></p>
+<p align="center"><a href="README.md"><img src="docs/images/bandeira-us.png" alt="" height="14"> English</a> · <a href="README.pt-BR.md"><img src="docs/images/bandeira-br.png" alt="" height="14"> Português</a> · <img src="docs/images/bandeira-fr.png" alt="" height="14"> <strong>Français</strong> · <a href="README.ru.md"><img src="docs/images/bandeira-ru.png" alt="" height="14"> Русский</a> · <a href="README.zh-TW.md"><img src="docs/images/bandeira-tw.png" alt="" height="14"> 繁體中文</a></p>
 
 <p align="center">
   <a href="https://github.com/DillanCidral/Joule/releases/latest/download/JouleApp-win-Setup.exe"><img src="https://img.shields.io/badge/T%C3%A9l%C3%A9charger_pour_Windows-FFC21F?style=for-the-badge" alt="Télécharger pour Windows" height="40"></a>
@@ -34,9 +34,9 @@ est gratuite, open source et en **bêta**.
   souhaitez.
 - **Alerte de batterie faible**, avec un seuil que vous choisissez.
 - **Français, anglais, portugais et russe** : suit la langue de Windows, et vous
-  pouvez en changer dans les Réglages.
-- **Vert quand c'est plein** : les appareils qui indiquent la charge passent au
-  vert sur le widget et dans la barre des tâches à 100 %.
+  pouvez en changer dans les Paramètres.
+- **Batterie pleine en vert** : un appareil en charge passe au vert sur le widget
+  et dans la zone de notification dès qu'il atteint 100 %.
 - **Résumé après mise à jour** : combien d'appareils Joule a suivis et combien
   d'alertes de batterie faible il a données, compté uniquement sur votre PC,
   ainsi que les nouveautés de la version.
@@ -62,15 +62,18 @@ lancez-le.
 |---|---|---|
 | Attack Shark R1 | dongle | ✅ vérifié |
 | Rapoo MT760 Mini | dongle | ✅ vérifié |
+| ATK 1K DONGLE-PAW | dongle | ✅ vérifié |
+| ATK Mercury I / M1 | dongle | ✅ vérifié |
 | Razer BlackShark V3 | dongle | ✅ vérifié |
 | Zaopin ZPW MAX (8K) | dongle | ✅ vérifié |
-| Récepteur AJAZZ 2.4G 8K | dongle | ✅ vérifié |
-| AULA F75 | câble (dongle pas encore testé) | ✅ vérifié |
+| Récepteur AJAZZ 2,4 GHz 8K | dongle | ✅ vérifié |
+| AULA F75 | câble | ✅ vérifié |
 | DualSense | câble | ✅ vérifié |
+| DualSense en Bluetooth, DualShock 4 | câble, Bluetooth (avec Steam ou un programme similaire ouvert) | 🧪 pas encore testé |
 | Manettes Xbox | adaptateur et câble | ✅ vérifié |
 | 8BitDo Ultimate 2C | câble | ✅ vérifié |
 | Tout appareil Bluetooth dont Windows affiche déjà la batterie dans *Paramètres > Bluetooth* | Bluetooth | ✅ vérifié |
-| Souris Logitech en LIGHTSPEED (PRO X 2 et autres) et Unifying (MX Master 2S), SteelSeries Arctis 1 et Arctis 7, VXE R1 Pro Max, VGN IO Aurora | dongle | ✅ confirmé par des utilisateurs |
+| Souris Logitech en LIGHTSPEED (PRO X 2 et autres) et Unifying (MX Master 2S), casques SteelSeries Arctis 1 et Arctis 7, VXE R1 Pro Max, VGN IO Aurora, AULA AU75, Razer Basilisk V3 Pro 35K, SteelSeries Arctis Nova 7 Gen 2, Lamzu Maya X, Dark Project Novus, HyperX Cloud Alpha 2 Wireless, AULA F75 (dongle), Pulsar TenZ, SteelSeries Arctis Nova 3P/3X, Logitech G733 | dongle | ✅ confirmé par des utilisateurs |
 | Logitech, Razer, SteelSeries, HyperX et Corsair : souris, claviers et casques | dongle | 🧪 pas encore testé |
 | Une vingtaine d'autres marques : ATK, VXE, VGN, Pulsar, Dareu, AJAZZ, Lamzu, WLmouse, G-Wolves, Hitscan, K-Snake, Bytech, Motospeed, Keychron, Incott et d'autres modèles Attack Shark | dongle | 🧪 pas encore testé |
 
@@ -82,9 +85,9 @@ confirme. Liste complète (en anglais) :
 ## Mon appareil n'est pas dans la liste
 
 Regardez d'abord les [familles d'appareils](https://github.com/DillanCidral/Joule/issues?q=is%3Aissue%20is%3Aopen%20label%3Atracking) : si le vôtre y est,
-donnez-lui un 👍 au lieu d'ouvrir une nouvelle issue.
+donnez-lui un 👍 au lieu d'ouvrir une nouvelle demande.
 
-Ouvrez **Réglages > Avancé > Envoyer un appareil** dans Joule. Il écoute pendant
+Ouvrez **Paramètres > Avancé > Envoyer un appareil** dans Joule. Il écoute pendant
 30 secondes pendant que vous utilisez l'appareil, vous montre ce qu'il a
 trouvé, retire les données personnelles (numéro de série, adresse Bluetooth,
 nom du PC, nom d'utilisateur) et enregistre un `.txt`. Vous envoyez ensuite ce
@@ -111,7 +114,7 @@ Vous voulez ajouter l'appareil vous-même ? Voir
   uniquement après que vous avez autorisé cette marque : la même question que
   celle envoyée par des projets ouverts comme Solaar, OpenRazer et
   HeadsetControl, une fois par lecture. Il n'envoie jamais de commande qui
-  modifie un réglage. L'interrupteur **Écoute seule** des Réglages désactive
+  modifie un réglage. L'interrupteur **Écoute seule** des Paramètres désactive
   toutes les questions.
 - Il n'affiche jamais un chiffre qu'il n'a pas lu. Pas de données, c'est
   « pas de données », jamais « 0 % ».

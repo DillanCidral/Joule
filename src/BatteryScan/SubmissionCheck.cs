@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text;
 using System.Text.Json;
 
@@ -49,7 +50,7 @@ internal static class SubmissionCheck
         string date = $"{r.GeneratedLocal:yyyy-MM-dd}";
         sb.AppendLine($"# Envio {file}");
         sb.AppendLine($"- origem: {origin}");
-        sb.AppendLine($"- gerado: {r.GeneratedLocal:yyyy-MM-dd HH:mm} por {Clean($"{r.Tool} {r.AppVersion}")} (formato {Clean(r.Version)})");
+        sb.AppendLine(CultureInfo.InvariantCulture, $"- gerado: {r.GeneratedLocal:yyyy-MM-dd HH:mm} por {Clean($"{r.Tool} {r.AppVersion}")} (formato {Clean(r.Version)})");
         sb.AppendLine($"- Windows: {Clean(r.System.OsCaption.Length > 0 ? r.System.OsCaption : r.System.OsVersion)} {Clean(r.System.Architecture)}");
         sb.AppendLine(leaks.Count == 0
             ? "- privacidade: OK"

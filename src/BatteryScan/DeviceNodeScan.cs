@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Text;
 using static BatteryTray.Scan.ScanNative;
@@ -273,7 +274,7 @@ public static class DeviceNodeScan
                 case DEVPROP_TYPE_FILETIME:
                     if (data.Length < 8) return "";
                     long ft = BitConverter.ToInt64(data);
-                    return ft <= 0 ? "" : DateTime.FromFileTimeUtc(ft).ToString("yyyy-MM-dd HH:mm:ss") + " UTC";
+                    return ft <= 0 ? "" : DateTime.FromFileTimeUtc(ft).ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture) + " UTC";
 
                 case DEVPROP_TYPE_EMPTY:
                 case DEVPROP_TYPE_NULL:

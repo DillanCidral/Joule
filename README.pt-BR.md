@@ -9,7 +9,7 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/licen%C3%A7a-AGPL--3.0-FFC21F?labelColor=1D1B18" alt="Licença: AGPL-3.0"></a>
 </p>
 
-<p align="center"><img src="docs/images/bandeira-br.png" alt="" height="14"> <strong>Português</strong> · <a href="README.md"><img src="docs/images/bandeira-us.png" alt="" height="14"> English</a> · <a href="README.fr.md"><img src="docs/images/bandeira-fr.png" alt="" height="14"> Français</a> · <a href="README.ru.md"><img src="docs/images/bandeira-ru.png" alt="" height="14"> Русский</a></p>
+<p align="center"><a href="README.md"><img src="docs/images/bandeira-us.png" alt="" height="14"> English</a> · <img src="docs/images/bandeira-br.png" alt="" height="14"> <strong>Português</strong> · <a href="README.fr.md"><img src="docs/images/bandeira-fr.png" alt="" height="14"> Français</a> · <a href="README.ru.md"><img src="docs/images/bandeira-ru.png" alt="" height="14"> Русский</a> · <a href="README.zh-TW.md"><img src="docs/images/bandeira-tw.png" alt="" height="14"> 繁體中文</a></p>
 
 <p align="center">
   <a href="https://github.com/DillanCidral/Joule/releases/latest/download/JouleApp-win-Setup.exe"><img src="https://img.shields.io/badge/Baixar_para_Windows-FFC21F?style=for-the-badge" alt="Baixar para Windows" height="40"></a>
@@ -57,15 +57,18 @@ Baixe o `JouleApp-win-Setup.exe` pelo botão acima ou na
 |---|---|---|
 | Attack Shark R1 | dongle | ✅ conferido |
 | Rapoo MT760 Mini | dongle | ✅ conferido |
+| ATK 1K DONGLE-PAW | dongle | ✅ conferido |
+| ATK Mercury I / M1, receptor `0005` e fone `0007` | dongle | ✅ conferido |
 | Razer BlackShark V3 | dongle | ✅ conferido |
 | Zaopin ZPW MAX (8K) | dongle | ✅ conferido |
 | Receptor AJAZZ 2.4G 8K | dongle | ✅ conferido |
-| AULA F75 | cabo (dongle ainda não testado) | ✅ conferido |
+| AULA F75 | cabo | ✅ conferido |
 | DualSense | cabo | ✅ conferido |
+| DualSense no Bluetooth, DualShock 4 | cabo, Bluetooth (com a Steam ou programa parecido aberto) | 🧪 ainda não testado |
 | Controles Xbox | adaptador e cabo | ✅ conferido |
 | 8BitDo Ultimate 2C | cabo | ✅ conferido |
 | Qualquer aparelho Bluetooth cuja bateria o Windows já mostre em *Configurações > Bluetooth* | Bluetooth | ✅ conferido |
-| Mouses Logitech no LIGHTSPEED (PRO X 2 e outros) e no Unifying (MX Master 2S), SteelSeries Arctis 1 e Arctis 7, VXE R1 Pro Max, VGN IO Aurora | dongle | ✅ confirmado por usuários |
+| Mouses Logitech no LIGHTSPEED (PRO X 2 e outros) e no Unifying (MX Master 2S), SteelSeries Arctis 1 e Arctis 7, VXE R1 Pro Max, VGN IO Aurora, AULA AU75, Razer Basilisk V3 Pro 35K, SteelSeries Arctis Nova 7 Gen 2, Lamzu Maya X, Dark Project Novus, HyperX Cloud Alpha 2 Wireless, AULA F75 (dongle), Pulsar TenZ, SteelSeries Arctis Nova 3P/3X, Logitech G733 | dongle | ✅ confirmado por usuários |
 | Logitech, Razer, SteelSeries, HyperX e Corsair: mouses, teclados e fones | dongle | 🧪 ainda não testado |
 | Umas 20 outras marcas: ATK, VXE, VGN, Pulsar, Dareu, AJAZZ, Lamzu, WLmouse, G-Wolves, Hitscan, K-Snake, Bytech, Motospeed, Keychron, Incott e outros modelos Attack Shark | dongle | 🧪 ainda não testado |
 

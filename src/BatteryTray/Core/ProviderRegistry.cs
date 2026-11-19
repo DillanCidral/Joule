@@ -42,6 +42,7 @@ public sealed class ProviderRegistry
             new BlackSharkProvider(),
             new IncottProvider(),
             new DualSenseProvider(),
+            new DualShock4Provider(),
         },
         standalone: new IStandaloneProvider[]
         {
@@ -54,6 +55,8 @@ public sealed class ProviderRegistry
             new CorsairProvider(),
             new AulaF75Provider(),
             new CompxProvider(),
+            new AtkMouseProvider(),
+            new MercuryProvider(),
             new ChineseBrandsProvider(),
         });
 
