@@ -20,7 +20,8 @@ each protocol query once per reading (see [SECURITY.md](../SECURITY.md)).
 | Attack Shark V6 | dongle | listens | Seen only at 100% so far (the mouse sends a "full" message); lower levels use the same format as the X11 but are untested |
 | Rapoo MT760 Mini | dongle | listens | The mouse only reports when Rapoo's own software is running; otherwise Joule shows the last value with its age |
 | Razer BlackShark V3 | dongle | asks | Asks once per reading (checked on hardware); between readings it keeps what the headset reported on its own, with its age |
-| DualSense (PS5) | cable only | listens | Over Bluetooth the controller only reports battery after the host writes to it, so that path is left out |
+| DualSense (PS5) | cable; Bluetooth not tested yet | listens | Over Bluetooth the controller only reports battery after a program such as Steam writes to it; Joule only reads what it already sends |
+| DualShock 4 (PS4) | cable and Bluetooth, not tested yet | listens | Same as the DualSense over Bluetooth |
 | Xbox controllers | adapter, cable | XInput | Coarse level (low / medium / full) on the adapter; "on cable" when wired |
 | 8BitDo Ultimate 2C | cable | XInput | Only "on cable", no percentage. On the dongle it reports a false value, which Joule discards |
 | Any Bluetooth device | Bluetooth | reads Windows | The same number as *Settings > Bluetooth*. Nothing goes over the radio |
@@ -74,6 +75,11 @@ showing Joule reading it on their own PC (November 2026).
 | SteelSeries Arctis Nova 7 Gen 2 | dongle `1038:227E` |
 | Lamzu Maya X | `373E:001E` 8K dongle |
 | Dark Project Novus | `3554:FB0A` VGN/VXE receiver |
+| HyperX Cloud Alpha 2 Wireless | dongle |
+| AULA F75 | `3554:FA09` receiver |
+| Pulsar TenZ Signature Edition | Pulsar 8K receiver |
+| SteelSeries Arctis Nova 3P / 3X | dongle |
+| Logitech G733 | dongle |
 
 ## Not tested
 

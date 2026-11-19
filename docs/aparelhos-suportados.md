@@ -21,7 +21,8 @@ quer dizer que cada consulta do protocolo é enviada uma vez por leitura (veja o
 | Attack Shark V6 | dongle | escuta | Visto só em 100% até agora (o mouse manda uma mensagem de "cheio"); níveis menores seguem o formato do X11, mas não foram testados |
 | Rapoo MT760 Mini | dongle | escuta | O mouse só informa com o programa da Rapoo aberto; sem ele, o Joule mostra o último valor com a idade |
 | Razer BlackShark V3 | dongle | pergunta | Pergunta uma vez por leitura (conferido no aparelho); entre leituras guarda o que o fone informou sozinho, com a idade |
-| DualSense (PS5) | só no cabo | escuta | Por Bluetooth o controle só informa a bateria depois que o PC escreve nele, então esse caminho fica de fora |
+| DualSense (PS5) | cabo; Bluetooth ainda não testado | escuta | Por Bluetooth o controle só informa a bateria depois que um programa como a Steam escreve nele; o Joule só lê o que ele já manda |
+| DualShock 4 (PS4) | cabo e Bluetooth, ainda não testado | escuta | Igual ao DualSense no Bluetooth |
 | Controles Xbox | adaptador, cabo | XInput | Faixa (baixa / média / cheia) pelo adaptador; "no cabo" quando plugado |
 | 8BitDo Ultimate 2C | cabo | XInput | Só "no cabo", sem percentual. Pelo dongle ele informa um valor falso, que o Joule descarta |
 | Qualquer aparelho Bluetooth | Bluetooth | lê o Windows | O mesmo número de *Configurações > Bluetooth*. Nada vai pelo rádio |
@@ -74,6 +75,11 @@ uma captura mostrando o Joule lendo no próprio PC (novembro de 2026).
 | SteelSeries Arctis Nova 7 Gen 2 | dongle `1038:227E` |
 | Lamzu Maya X | dongle 8K `373E:001E` |
 | Dark Project Novus | receptor VGN/VXE `3554:FB0A` |
+| HyperX Cloud Alpha 2 Wireless | dongle |
+| AULA F75 | receptor `3554:FA09` |
+| Pulsar TenZ Signature Edition | receptor Pulsar 8K |
+| SteelSeries Arctis Nova 3P / 3X | dongle |
+| Logitech G733 | dongle |
 
 ## Não testados
 
