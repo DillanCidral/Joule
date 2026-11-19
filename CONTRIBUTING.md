@@ -51,3 +51,15 @@ dotnet run --project src/BatteryTray -- --demo
 
 By contributing you agree that your contribution is licensed under
 [AGPL-3.0](LICENSE).
+
+## Linux port (Rust)
+
+The Linux code is in `linux/`. Before a pull request:
+
+```bash
+cd linux
+cargo fmt --check && cargo clippy --workspace --all-targets -- -D warnings && cargo test --workspace
+```
+
+The security rules of [SECURITY.md](SECURITY.md) are checked by `linux/crates/joule/tests/source_rules.rs`
+(no network code, one write door) and by `joule --selftest`. See [docs/linux.md](docs/linux.md).
