@@ -31,7 +31,7 @@ each protocol query once per reading (see [SECURITY.md](../SECURITY.md)).
 | ATK A9 Ultra V2 | `373B:11FE` 8K NANO receiver | asks | Battery percentage confirmed on hardware. A mouse asleep does not answer; move it and the next reading picks it up |
 | ATK 1K DONGLE-PAW (`373B:10F0`) | dongle | asks | One battery query per reading, independent of ATK HUB. The receiver may report charging with the cable unplugged |
 | ATK Mercury I / M1 (`373B:107C`) | dongle | asks | Receiver `0005`, headset `0007`. Three queries verify version, layout and percentage. Charging state pending |
-| ASUS ROG Pelta | `0B05:1B84` 2.4 GHz receiver | asks | Level and charging flag; battery percentage confirmed on hardware. Close Armoury Crate, which holds the same channel |
+| ASUS ROG Pelta | `0B05:1B84` 2.4 GHz receiver | asks, then listens | Asks level and charging flag once per reading; between readings it listens to the level the headset sends on its own (live). Charging between readings follows the level going up or down. Confirmed on hardware. Close Armoury Crate, which holds the same channel |
 
 ### Reading the checked ATK devices
 

@@ -150,7 +150,23 @@ internal static partial class SelfTest
         Check("pelta short reply rejected", RogPeltaProvider.ParseLevel(B(0xCC, 0x12, 0x07)) is null);
         var peltaCharge = new byte[64]; peltaCharge[0] = 0xCC; peltaCharge[1] = 0x12; peltaCharge[2] = 0x08; peltaCharge[5] = 1;
         Check("pelta charging flag", RogPeltaProvider.ParseCharging(peltaCharge));
-        Check("pelta owns only its receiver", new RogPeltaProvider().Handles(0x0B05, 0x1B84) && !new RogPeltaProvider().Handles(0x0B05, 0x1B85));
+        Check("pelta owns only its receiver", new RogPeltaProvider().SupportedIds is [(0x0B05, 0x1B84)]);
+        // Report the headset sends on its own when the level changes (captured: CC 12 09 00 00 4A = 74%).
+        Eq("pelta pushed level 74%", 74, RogPeltaProvider.ParsePush(B(0xCC, 0x12, 0x09, 0x00, 0x00, 0x4A, 0x00)));
+        Check("pelta push above 100 rejected", RogPeltaProvider.ParsePush(B(0xCC, 0x12, 0x09, 0x00, 0x00, 0x65, 0x00)) is null);
+        Check("pelta push FF AA rejected", RogPeltaProvider.ParsePush(B(0xCC, 0x12, 0x09, 0x00, 0x00, 0xFF, 0xAA)) is null);
+        Check("pelta level reply is not a push", RogPeltaProvider.ParsePush(peltaBattery) is null);
+        var trend = new RogPeltaProvider.ChargeTrend();
+        trend.Observe(74);
+        Check("pelta trend unknown from one value", trend.Charging is null);
+        trend.Observe(75);
+        Check("pelta rising level means charging", trend.Charging == true);
+        trend.Observe(75);
+        Check("pelta same level keeps state", trend.Charging == true);
+        trend.Observe(74);
+        Check("pelta falling level means not charging", trend.Charging == false);
+        trend.Reset(60, true);
+        Check("pelta asked flag holds until level moves", trend.Charging == true);
 
         // Confirmacao: o pico de um relatorio so (80, 90, 80 -- visto no log de 2026-10-22) nao troca o valor.
         var conf = new PassiveReportListener("t", _ => false, r => r[0], confirmReports: 2);

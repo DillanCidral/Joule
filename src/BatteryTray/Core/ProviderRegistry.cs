@@ -43,6 +43,7 @@ public sealed class ProviderRegistry
             new IncottProvider(),
             new DualSenseProvider(),
             new DualShock4Provider(),
+            new RogPeltaProvider(),
         },
         standalone: new IStandaloneProvider[]
         {
@@ -54,7 +55,6 @@ public sealed class ProviderRegistry
             new HyperXProvider(),
             new CorsairProvider(),
             new AulaF75Provider(),
-            new RogPeltaProvider(),
             new CompxProvider(),
             new AtkMouseProvider(),
             new MercuryProvider(),
