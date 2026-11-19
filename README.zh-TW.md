@@ -101,6 +101,8 @@ dotnet run --project src/BatteryTray -- --demo
 
 ## 致謝
 
+0.2.3 版本包含了 [@DiogoLss](https://github.com/DiogoLss)（ATK 1K DONGLE-PAW 與 Mercury I / M1）、[@BatuhanUyurca](https://github.com/BatuhanUyurca)（ATK A9 Ultra V2）、[@Ali-Fani](https://github.com/Ali-Fani)（Attack Shark V6）、[@mochi0820](https://github.com/mochi0820)（繁體中文）、[@TukaLeHibou](https://github.com/TukaLeHibou)（法文校訂）與 [@wrldwideme](https://github.com/wrldwideme)（俄文 README）的貢獻，時間格式則來自 Yim 的點子。
+
 0.2.1 版本包含了來自社群貢獻者的程式碼與翻譯： 感謝 [@Ali-Fani](https://github.com/Ali-Fani)（Razer BlackShark V3 支援）、 [@wrldwideme](https://github.com/wrldwideme)（AULA F75、AJAZZ 與 Zaopin 接收器支援及俄文翻譯）、 [@TukaLeHibou](https://github.com/TukaLeHibou)（法文翻譯），以及 Daniel Palma 提出充滿電時以綠色顯示的靈感。由衷感謝每一位提供封包擷取資料的使用者。
 
 ## 贊助支持 Joule

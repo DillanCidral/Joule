@@ -136,6 +136,11 @@ dotnet run --project src/BatteryTray -- --demo
 
 ## Thanks
 
+Version 0.2.3 adds code and translations from [@DiogoLss](https://github.com/DiogoLss) (ATK 1K DONGLE-PAW and
+Mercury I / M1), [@BatuhanUyurca](https://github.com/BatuhanUyurca) (ATK A9 Ultra V2), [@Ali-Fani](https://github.com/Ali-Fani) (Attack Shark V6),
+[@mochi0820](https://github.com/mochi0820) (Traditional Chinese), [@TukaLeHibou](https://github.com/TukaLeHibou) (French, reviewed) and [@wrldwideme](https://github.com/wrldwideme)
+(Russian README), and the clock format came from an idea by Yim.
+
 Version 0.2.1 has code and translations from the community:
 [@Ali-Fani](https://github.com/Ali-Fani) (Razer BlackShark V3),
 [@wrldwideme](https://github.com/wrldwideme) (AULA F75, the AJAZZ and Zaopin

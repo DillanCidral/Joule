@@ -146,6 +146,11 @@ d'informations (en anglais) dans [CONTRIBUTING.md](CONTRIBUTING.md) et
 
 ## Merci
 
+La version 0.2.3 apporte du code et des traductions de [@DiogoLss](https://github.com/DiogoLss) (ATK 1K DONGLE-PAW
+et Mercury I / M1), [@BatuhanUyurca](https://github.com/BatuhanUyurca) (ATK A9 Ultra V2), [@Ali-Fani](https://github.com/Ali-Fani) (Attack Shark V6),
+[@mochi0820](https://github.com/mochi0820) (chinois traditionnel), [@TukaLeHibou](https://github.com/TukaLeHibou) (français révisé) et [@wrldwideme](https://github.com/wrldwideme)
+(README russe), et le format de l'heure vient d'une idée de Yim.
+
 La version 0.2.1 contient du code et des traductions de la communauté :
 [@Ali-Fani](https://github.com/Ali-Fani) (Razer BlackShark V3),
 [@wrldwideme](https://github.com/wrldwideme) (AULA F75, récepteurs AJAZZ et

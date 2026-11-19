@@ -144,6 +144,11 @@ dotnet run --project src/BatteryTray -- --demo
 
 ## Спасибо
 
+В версию 0.2.3 вошли код и переводы от [@DiogoLss](https://github.com/DiogoLss) (ATK 1K DONGLE-PAW и
+Mercury I / M1), [@BatuhanUyurca](https://github.com/BatuhanUyurca) (ATK A9 Ultra V2), [@Ali-Fani](https://github.com/Ali-Fani) (Attack Shark V6),
+[@mochi0820](https://github.com/mochi0820) (традиционный китайский), [@TukaLeHibou](https://github.com/TukaLeHibou) (вычитка французского) и [@wrldwideme](https://github.com/wrldwideme)
+(README на русском), а формат времени появился благодаря идее Yim.
+
 В версию 0.2.1 вошли код и переводы от сообщества:
 [@Ali-Fani](https://github.com/Ali-Fani) (Razer BlackShark V3),
 [@wrldwideme](https://github.com/wrldwideme) (AULA F75, ресиверы AJAZZ и Zaopin

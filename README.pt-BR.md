@@ -138,6 +138,11 @@ O `--demo` mostra aparelhos de exemplo sem tocar em hardware nenhum. Mais em
 
 ## Obrigado
 
+A versão 0.2.3 traz código e tradução de [@DiogoLss](https://github.com/DiogoLss) (ATK 1K DONGLE-PAW e
+Mercury I / M1), [@BatuhanUyurca](https://github.com/BatuhanUyurca) (ATK A9 Ultra V2), [@Ali-Fani](https://github.com/Ali-Fani) (Attack Shark V6),
+[@mochi0820](https://github.com/mochi0820) (chinês tradicional), [@TukaLeHibou](https://github.com/TukaLeHibou) (francês revisado) e [@wrldwideme](https://github.com/wrldwideme)
+(README em russo), e o formato da hora veio de uma ideia do Yim.
+
 A versão 0.2.1 tem código e tradução da comunidade:
 [@Ali-Fani](https://github.com/Ali-Fani) (Razer BlackShark V3),
 [@wrldwideme](https://github.com/wrldwideme) (AULA F75, receptores AJAZZ e
