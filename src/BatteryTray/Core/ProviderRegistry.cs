@@ -34,7 +34,33 @@ public sealed class ProviderRegistry
         }
     }
 
-    public static ProviderRegistry CreateDefault() => new(
+    public static ProviderRegistry CreateDefault() => OperatingSystem.IsWindows() ? CreateWindows() : CreateLinux();
+
+    /// <summary>
+    /// Linux: the HID providers run over hidraw. Left out: XInput and the
+    /// Bluetooth node (Windows APIs), and DualSense and Logitech, whose
+    /// battery the kernel driver (hid-playstation, hid-logitech-hidpp) already
+    /// reports; <see cref="PowerSupplyProvider"/> reads it from there.
+    /// </summary>
+    private static ProviderRegistry CreateLinux() => new(
+        hid: new IBatteryProvider[]
+        {
+            new AttackSharkProvider(),
+            new RapooProvider(),
+            new IncottProvider(),
+        },
+        standalone: new IStandaloneProvider[]
+        {
+            new PowerSupplyProvider(),
+            new RazerProvider(),
+            new SteelSeriesProvider(),
+            new HyperXProvider(),
+            new CorsairProvider(),
+            new CompxProvider(),
+            new ChineseBrandsProvider(),
+        });
+
+    private static ProviderRegistry CreateWindows() => new(
         hid: new IBatteryProvider[]
         {
             new AttackSharkProvider(),

@@ -118,6 +118,47 @@ Detalhes: [SECURITY.pt-BR.md](SECURITY.pt-BR.md).
 </details>
 
 <details>
+<summary><strong>Linux (linha de comando, beta)</strong></summary>
+
+O `joule-cli` lê a bateria uma vez e mostra. Ainda sem bandeja. Precisa do
+[.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0).
+
+```bash
+dotnet run --project src/JouleCli
+```
+
+Um arquivo só, que roda sem o .NET instalado, no Ubuntu, Debian, Fedora,
+openSUSE, Arch e outras distribuições glibc (no Alpine use `linux-musl-x64` e
+`apk add libgcc libstdc++`):
+
+```bash
+dotnet publish src/JouleCli -c Release -r linux-x64 --self-contained -p:PublishSingleFile=true -o out
+./out/joule-cli
+```
+
+O `tools/linux/test-distros.sh` roda ele dentro de Ubuntu, Debian, Fedora,
+openSUSE e Alpine, no seu kernel e com os seus aparelhos (bubblewrap, sem root).
+
+- Logitech, DualSense, DualShock 4, controles Nintendo e Steam, controles Xbox
+  pelo Bluetooth (xpadneo) e mouses e teclados Bluetooth LE: lidos do que o
+  driver do kernel já informa em `/sys/class/power_supply`. Nada é enviado ao
+  aparelho.
+- Attack Shark, Rapoo, Incott, Razer, SteelSeries, HyperX, Corsair e as outras
+  marcas de dongle: lidos por `/dev/hidraw*`, com as mesmas regras do Windows.
+  Marcas que precisam ser perguntadas pedem `--allow <VID>`; `--listen-only`
+  desliga todas as perguntas.
+- Na maioria das distribuições `/dev/hidraw*` é do root. O `joule-cli` avisa
+  quando não conseguiu abrir um aparelho; para liberar ao seu usuário os
+  aparelhos suportados plugados agora:
+
+```bash
+dotnet run --project src/JouleCli -- --udev-rules | sudo tee /etc/udev/rules.d/70-joule.rules
+sudo udevadm control --reload && sudo udevadm trigger
+```
+
+</details>
+
+<details>
 <summary><strong>Compilar</strong></summary>
 
 Você precisa de Windows e do [SDK do .NET 8](https://dotnet.microsoft.com/download/dotnet/8.0).
