@@ -7,17 +7,18 @@ namespace BatteryTray.Providers;
 /// ASUS ROG Pelta headset on its 2.4 GHz receiver (0B05:1B84). The receiver's
 /// vendor collection (usage page 0xFF00, 64-byte reports) uses report 0xCC,
 /// group 0x12:
-///   - question 0x07: reply carries the level in byte 6;
-///   - question 0x08: reply carries the charging flag in byte 5;
-///   - 0x09, sent by the headset ON ITS OWN whenever the level changes
-///     (captured passively on real hardware: CC 12 09 00 00 4A / 4B / 4C while
-///     charging 74 -> 76%), level in byte 5.
+///   - 0x07: answer to the question carries the level in byte 6;
+///   - 0x08: charging flag in byte 5 (1 = charging). It is the answer to the
+///     0x08 question AND the headset sends it ON ITS OWN when the cable is
+///     plugged or unplugged (captured: 01 / 00 / 01 as the cable went in, out, in);
+///   - 0x09: sent by the headset ON ITS OWN whenever the level changes
+///     (captured: CC 12 09 00 00 4A / 4B / 4C while charging 74 -> 76%), level in byte 5.
 /// A reply echoes bytes 1-2 of the question; FF AA in bytes 1-2 or 5-6 means the
 /// headset did not answer (asleep or off).
 ///
-/// Between readings Joule only listens for the 0x09 report (one handle, nothing
-/// sent). Each on-demand reading asks 0x07 and 0x08 once through HidRequest. No
-/// lighting or configuration command is used.
+/// Between readings Joule only listens for 0x08 and 0x09 (one handle, nothing
+/// sent), so level and charging update live. Each on-demand reading asks 0x07
+/// and 0x08 once through HidRequest. No lighting or configuration command.
 /// </summary>
 public sealed class RogPeltaProvider : IBatteryProvider, IPassiveListenerProvider, IDisposable
 {
@@ -31,10 +32,29 @@ public sealed class RogPeltaProvider : IBatteryProvider, IPassiveListenerProvide
         c.Vid == Vid && c.Pid == Pid && c.UsagePage == VendorPage && c.InputLen >= ReportLength && c.OutputLen >= ReportLength;
 
     private readonly PassiveReportListener _listener;
-    private readonly ChargeTrend _trend = new();
+    private readonly PeltaState _state = new();
+
+    /// <summary>Charging flipped on the open handle; the level listener only notifies on a new percentage.</summary>
+    private event Action? ChargingChanged;
 
     public RogPeltaProvider() =>
-        _listener = new PassiveReportListener("ROG Pelta", IsTarget, r => _trend.Observe(ParsePush(r)));
+        _listener = new PassiveReportListener("ROG Pelta", IsTarget, OnReport);
+
+    /// <summary>Runs on the listener's thread for every report on the open handle.</summary>
+    private int? OnReport(byte[] r)
+    {
+        if (ParseChargePush(r) is bool charging)
+        {
+            if (_state.SetCharging(charging))
+            {
+                Log.Write($"ROG Pelta: {(charging ? "carregando" : "fora do carregador")}");
+                try { ChargingChanged?.Invoke(); }
+                catch (Exception ex) { Log.Error("RogPelta.ChargingChanged", ex); }
+            }
+            return null;
+        }
+        return _state.Observe(ParsePush(r));
+    }
 
     public string Name => "ROG Pelta";
 
@@ -52,8 +72,8 @@ public sealed class RogPeltaProvider : IBatteryProvider, IPassiveListenerProvide
 
     public event Action? ValueChanged
     {
-        add => _listener.ValueChanged += value;
-        remove => _listener.ValueChanged -= value;
+        add { _listener.ValueChanged += value; ChargingChanged += value; }
+        remove { _listener.ValueChanged -= value; ChargingChanged -= value; }
     }
 
     public void Dispose() => _listener.Dispose();
@@ -74,7 +94,7 @@ public sealed class RogPeltaProvider : IBatteryProvider, IPassiveListenerProvide
         }
 
         // One question per on-demand reading. During a live refresh (or without
-        // permission / in "Listen only") Ask returns null and the listener's value counts.
+        // permission / in "Listen only") Ask returns null and what was heard counts.
         using (var session = HidRequest.Open(new[] { target }))
         {
             if (session?.Ask(target, BuildRequest(BatteryCommand), r => IsReplyTo(r, BatteryCommand), AskTimeout) is { } battery
@@ -82,13 +102,13 @@ public sealed class RogPeltaProvider : IBatteryProvider, IPassiveListenerProvide
             {
                 var charge = session.Ask(target, BuildRequest(ChargeCommand), r => IsReplyTo(r, ChargeCommand), AskTimeout);
                 bool? charging = charge is null ? null : ParseCharging(charge);
-                _trend.Reset(level, charging);
+                _state.Reset(level, charging);
                 return BatteryReading.Percentage(level, observedUtc: DateTime.UtcNow, chargeText: charging == true ? ChargingText : null);
             }
         }
 
-        if (_listener.Last is { } last)
-            return BatteryReading.Percentage(last.Percent, observedUtc: last.SeenUtc, chargeText: _trend.Charging == true ? ChargingText : null);
+        if (_state.Snapshot() is { Level: int known } snap)
+            return BatteryReading.Percentage(known, observedUtc: snap.SeenUtc, chargeText: snap.Charging == true ? ChargingText : null);
 
         return BatteryReading.NoData(L.T(
             "o receptor não respondeu; a pergunta pode estar sem permissão, o fone pode estar desligado ou o Armoury Crate pode estar usando o canal",
@@ -112,26 +132,48 @@ public sealed class RogPeltaProvider : IBatteryProvider, IPassiveListenerProvide
     internal static bool ParseCharging(byte[] r) =>
         IsReplyTo(r, ChargeCommand) && !IsError(r) && r[5] == 1;
 
+    /// <summary>Charging flag from a 0x08 report (sent on its own on plug/unplug); null unless byte 5 is 0 or 1.</summary>
+    internal static bool? ParseChargePush(byte[] r) =>
+        IsReplyTo(r, ChargeCommand) && !IsError(r) && r[5] <= 1 ? r[5] == 1 : null;
+
     /// <summary>Level 0-100 from the 0x09 report the headset sends on its own; null otherwise.</summary>
     internal static int? ParsePush(byte[] r) =>
         IsReplyTo(r, LevelPush) && !IsError(r) && r[5] <= 100 ? r[5] : null;
 
     /// <summary>
-    /// Charging state between questions. The headset sends no charging event, only
-    /// level changes, so: the asked flag holds until the level moves; a rising level
-    /// means charging, a falling one means not. Unknown stays unknown.
+    /// Last known level and charging state, from questions and from what the headset
+    /// sends on its own. A 0x08 report sets charging directly. Without one, a level
+    /// that rises means charging and one that falls means not. Unknown stays unknown.
     /// </summary>
-    internal sealed class ChargeTrend
+    internal sealed class PeltaState
     {
         private readonly object _gate = new();
         private int? _level;
         private bool? _charging;
+        private DateTime _seenUtc;
 
         public bool? Charging { get { lock (_gate) return _charging; } }
 
+        public (int? Level, bool? Charging, DateTime SeenUtc) Snapshot()
+        {
+            lock (_gate) return (_level, _charging, _seenUtc);
+        }
+
         public void Reset(int level, bool? charging)
         {
-            lock (_gate) { _level = level; _charging = charging; }
+            lock (_gate) { _level = level; _charging = charging; _seenUtc = DateTime.UtcNow; }
+        }
+
+        /// <summary>True when the state changed.</summary>
+        public bool SetCharging(bool charging)
+        {
+            lock (_gate)
+            {
+                bool changed = _charging != charging;
+                _charging = charging;
+                if (_level is not null) _seenUtc = DateTime.UtcNow;
+                return changed;
+            }
         }
 
         public int? Observe(int? level)
@@ -141,6 +183,7 @@ public sealed class RogPeltaProvider : IBatteryProvider, IPassiveListenerProvide
             {
                 if (_level is int before && now != before) _charging = now > before;
                 _level = now;
+                _seenUtc = DateTime.UtcNow;
             }
             return now;
         }

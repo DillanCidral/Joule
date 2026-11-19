@@ -156,7 +156,7 @@ internal static partial class SelfTest
         Check("pelta push above 100 rejected", RogPeltaProvider.ParsePush(B(0xCC, 0x12, 0x09, 0x00, 0x00, 0x65, 0x00)) is null);
         Check("pelta push FF AA rejected", RogPeltaProvider.ParsePush(B(0xCC, 0x12, 0x09, 0x00, 0x00, 0xFF, 0xAA)) is null);
         Check("pelta level reply is not a push", RogPeltaProvider.ParsePush(peltaBattery) is null);
-        var trend = new RogPeltaProvider.ChargeTrend();
+        var trend = new RogPeltaProvider.PeltaState();
         trend.Observe(74);
         Check("pelta trend unknown from one value", trend.Charging is null);
         trend.Observe(75);
@@ -167,6 +167,14 @@ internal static partial class SelfTest
         Check("pelta falling level means not charging", trend.Charging == false);
         trend.Reset(60, true);
         Check("pelta asked flag holds until level moves", trend.Charging == true);
+        // Charging report the headset sends on its own on plug/unplug (captured: CC 12 08 00 00 01 / 00).
+        Check("pelta plug report = charging", RogPeltaProvider.ParseChargePush(B(0xCC, 0x12, 0x08, 0x00, 0x00, 0x01, 0x00)) == true);
+        Check("pelta unplug report = not charging", RogPeltaProvider.ParseChargePush(B(0xCC, 0x12, 0x08, 0x00, 0x00, 0x00, 0x00)) == false);
+        Check("pelta odd charge byte rejected", RogPeltaProvider.ParseChargePush(B(0xCC, 0x12, 0x08, 0x00, 0x00, 0x07, 0x00)) is null);
+        Check("pelta level push is not a charge report", RogPeltaProvider.ParseChargePush(B(0xCC, 0x12, 0x09, 0x00, 0x00, 0x01, 0x00)) is null);
+        Check("pelta unplug changes state", trend.SetCharging(false) && trend.Charging == false);
+        Check("pelta same flag again is no change", !trend.SetCharging(false));
+        Check("pelta plug changes state", trend.SetCharging(true) && trend.Snapshot() is { Level: 60, Charging: true });
 
         // Confirmacao: o pico de um relatorio so (80, 90, 80 -- visto no log de 2026-10-22) nao troca o valor.
         var conf = new PassiveReportListener("t", _ => false, r => r[0], confirmReports: 2);
