@@ -50,6 +50,7 @@ public static class Known
         ["1D57:FA61"] = DeviceKind.Mouse,
         ["24AE:1871"] = DeviceKind.Mouse,
         ["1532:057A"] = DeviceKind.Headset,
+        ["0B05:1B84"] = DeviceKind.Headset, // ROG Pelta receiver
         ["373B:10F0"] = DeviceKind.Mouse,
         ["373B:107C"] = DeviceKind.Headset,
         ["291D:385D"] = DeviceKind.Headset,
