@@ -11,6 +11,15 @@
 
 <p align="center"><a href="README.md"><img src="docs/images/bandeira-us.png" alt="" height="14"> English</a> · <a href="README.pt-BR.md"><img src="docs/images/bandeira-br.png" alt="" height="14"> Português</a> · <img src="docs/images/bandeira-fr.png" alt="" height="14"> <strong>Français</strong> · <a href="README.ru.md"><img src="docs/images/bandeira-ru.png" alt="" height="14"> Русский</a> · <a href="README.zh-TW.md"><img src="docs/images/bandeira-tw.png" alt="" height="14"> 繁體中文</a></p>
 
+> [!WARNING]
+> **Windows Defender and version 0.2.3.** Since November 20, 2026, Defender
+> flags the installer as `Trojan:Win32/Yomal!rfn` and quarantines it. The
+> release files are the same ones published on November 19, and the app rebuilt
+> from this code matches the released binary. Everything points to a false
+> alarm, and the file has been sent to Microsoft for review. If Defender caught
+> Joule, you can leave it in quarantine and wait: this notice will change when
+> Microsoft replies. Details on the [0.2.3 release page](https://github.com/DillanCidral/Joule/releases/tag/v0.2.3).
+
 <p align="center">
   <a href="https://github.com/DillanCidral/Joule/releases/latest/download/JouleApp-win-Setup.exe"><img src="https://img.shields.io/badge/T%C3%A9l%C3%A9charger_pour_Windows-FFC21F?style=for-the-badge" alt="Télécharger pour Windows" height="40"></a>
 </p>
