@@ -43,6 +43,7 @@ public sealed class ProviderRegistry
             new IncottProvider(),
             new DualSenseProvider(),
             new DualShock4Provider(),
+            new RogPeltaProvider(),
         },
         standalone: new IStandaloneProvider[]
         {

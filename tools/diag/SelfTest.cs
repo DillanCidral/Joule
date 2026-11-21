@@ -137,6 +137,45 @@ internal static partial class SelfTest
         }).Single();
         Check("aula wired shows cable state without inventing a percent", aulaWired.Reading is { Status: ReadingStatus.Charging, Percent: null } && aulaWired.Origin == "Cabo");
 
+        // --- ROG Pelta: only the two read questions (CC 12 07 level, CC 12 08 charging). ---
+        Check("pelta battery request CC 12 07", RogPeltaProvider.BuildRequest(0x07) is [0xCC, 0x12, 0x07]);
+        var peltaBattery = new byte[64]; peltaBattery[0] = 0xCC; peltaBattery[1] = 0x12; peltaBattery[2] = 0x07; peltaBattery[6] = 83;
+        Eq("pelta battery 83%", 83, RogPeltaProvider.ParseLevel(peltaBattery));
+        var peltaHigh = (byte[])peltaBattery.Clone(); peltaHigh[6] = 101;
+        Check("pelta out-of-range level rejected", RogPeltaProvider.ParseLevel(peltaHigh) is null);
+        var peltaErr = (byte[])peltaBattery.Clone(); peltaErr[5] = 0xFF; peltaErr[6] = 0xAA;
+        Check("pelta FF AA error rejected", RogPeltaProvider.ParseLevel(peltaErr) is null);
+        var peltaWrong = (byte[])peltaBattery.Clone(); peltaWrong[2] = 0x08;
+        Check("pelta reply to another command rejected", RogPeltaProvider.ParseLevel(peltaWrong) is null);
+        Check("pelta short reply rejected", RogPeltaProvider.ParseLevel(B(0xCC, 0x12, 0x07)) is null);
+        var peltaCharge = new byte[64]; peltaCharge[0] = 0xCC; peltaCharge[1] = 0x12; peltaCharge[2] = 0x08; peltaCharge[5] = 1;
+        Check("pelta charging flag", RogPeltaProvider.ParseCharging(peltaCharge));
+        Check("pelta owns only its receiver", new RogPeltaProvider().SupportedIds is [(0x0B05, 0x1B84)]);
+        // Report the headset sends on its own when the level changes (captured: CC 12 09 00 00 4A = 74%).
+        Eq("pelta pushed level 74%", 74, RogPeltaProvider.ParsePush(B(0xCC, 0x12, 0x09, 0x00, 0x00, 0x4A, 0x00)));
+        Check("pelta push above 100 rejected", RogPeltaProvider.ParsePush(B(0xCC, 0x12, 0x09, 0x00, 0x00, 0x65, 0x00)) is null);
+        Check("pelta push FF AA rejected", RogPeltaProvider.ParsePush(B(0xCC, 0x12, 0x09, 0x00, 0x00, 0xFF, 0xAA)) is null);
+        Check("pelta level reply is not a push", RogPeltaProvider.ParsePush(peltaBattery) is null);
+        var trend = new RogPeltaProvider.PeltaState();
+        trend.Observe(74);
+        Check("pelta trend unknown from one value", trend.Charging is null);
+        trend.Observe(75);
+        Check("pelta rising level means charging", trend.Charging == true);
+        trend.Observe(75);
+        Check("pelta same level keeps state", trend.Charging == true);
+        trend.Observe(74);
+        Check("pelta falling level means not charging", trend.Charging == false);
+        trend.Reset(60, true);
+        Check("pelta asked flag holds until level moves", trend.Charging == true);
+        // Charging report the headset sends on its own on plug/unplug (captured: CC 12 08 00 00 01 / 00).
+        Check("pelta plug report = charging", RogPeltaProvider.ParseChargePush(B(0xCC, 0x12, 0x08, 0x00, 0x00, 0x01, 0x00)) == true);
+        Check("pelta unplug report = not charging", RogPeltaProvider.ParseChargePush(B(0xCC, 0x12, 0x08, 0x00, 0x00, 0x00, 0x00)) == false);
+        Check("pelta odd charge byte rejected", RogPeltaProvider.ParseChargePush(B(0xCC, 0x12, 0x08, 0x00, 0x00, 0x07, 0x00)) is null);
+        Check("pelta level push is not a charge report", RogPeltaProvider.ParseChargePush(B(0xCC, 0x12, 0x09, 0x00, 0x00, 0x01, 0x00)) is null);
+        Check("pelta unplug changes state", trend.SetCharging(false) && trend.Charging == false);
+        Check("pelta same flag again is no change", !trend.SetCharging(false));
+        Check("pelta plug changes state", trend.SetCharging(true) && trend.Snapshot() is { Level: 60, Charging: true });
+
         // Confirmacao: o pico de um relatorio so (80, 90, 80 -- visto no log de 2026-10-22) nao troca o valor.
         var conf = new PassiveReportListener("t", _ => false, r => r[0], confirmReports: 2);
         conf.OnReport(B(80));
