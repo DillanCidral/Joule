@@ -62,6 +62,17 @@ targets of the other brands in `ChineseBrandsProvider.cs`, `CompxProvider.cs`,
 
 Copyright (C) 2026 OpenMouse-Project. AGPL-3.0-or-later.
 
+### G933 charging curve (Linux port)
+
+The charging curve of the G933/G935 in `linux/crates/joule-providers/src/logitech_headset.rs`
+(`CHARGE_CURVE_G933`) is reduced from the measurements of g933-utils
+(https://github.com/ashkitten/g933-utils), `libg933/src/maps/0A5B/charging_ascending.csv`.
+The meaning of status 7 ("full") comes from the same project.
+
+Copyright (c) 2019 ash lea
+
+Licensed under the MIT License (text below).
+
 ## Protocol references
 
 For these projects Joule uses only the **format** of the battery protocol. The

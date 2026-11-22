@@ -1,0 +1,22 @@
+name: Linux
+
+on:
+  push:
+    paths: ["linux/**", "docs/linux.md", ".github/workflows/linux.yml"]
+  pull_request:
+    paths: ["linux/**", "docs/linux.md", ".github/workflows/linux.yml"]
+
+jobs:
+  rust:
+    runs-on: ubuntu-latest
+    container: fedora:44
+    defaults:
+      run:
+        working-directory: linux
+    steps:
+      - uses: actions/checkout@v4
+      - name: Packages
+        run: dnf install -y gcc gtk4-devel libadwaita-devel systemd-devel dbus-devel pkgconf-pkg-config rust cargo clippy rustfmt
+      - run: cargo fmt --check
+      - run: cargo clippy --workspace --all-targets -- -D warnings
+      - run: cargo test --workspace
