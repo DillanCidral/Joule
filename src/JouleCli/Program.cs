@@ -1,0 +1,88 @@
+using BatteryTray.Core;
+using BatteryTray.Interop;
+
+namespace BatteryTray.Cli;
+
+/// <summary>
+/// joule-cli: one on-demand reading, printed, then exit. Same rules as the
+/// app: nothing runs in a loop, and brands that must be asked are asked only
+/// with consent (--allow), never with --listen-only.
+/// </summary>
+internal static class Program
+{
+    private static int Main(string[] args)
+    {
+        if (args.Contains("--help") || args.Contains("-h"))
+        {
+            Console.WriteLine("""
+                joule-cli: battery of wireless mice, headsets, controllers and keyboards.
+
+                  joule-cli                     read once and list the devices
+                  joule-cli --allow 1532,1038   also ask these brands (VID) for the battery, this run only
+                  joule-cli --listen-only       never ask any device, only listen and read what the OS stored
+                  joule-cli --udev-rules        print udev rules giving your user access to the supported devices plugged in now
+                  joule-cli --selftest          check the parts that do not need hardware
+                """);
+            return 0;
+        }
+        if (args.Contains("--selftest")) return SelfTest.Run();
+
+        var settings = Settings.Load();
+        // Invariant globalization hides the user's culture, so "auto" reads the locale variables as glibc does.
+        string locale = new[] { "LC_ALL", "LC_MESSAGES", "LANG" }.Select(Environment.GetEnvironmentVariable).FirstOrDefault(v => !string.IsNullOrEmpty(v)) ?? "";
+        L.Set(settings.Language != "auto" ? settings.Language : locale.StartsWith("pt", StringComparison.OrdinalIgnoreCase) ? "pt" : "en");
+        // One-shot reading: wait for the report once instead of keeping a listener open after exit.
+        settings.PassiveListenersEnabled = false;
+        if (args.Contains("--listen-only")) settings.ListenOnly = true;
+        int allowAt = Array.IndexOf(args, "--allow");
+        if (allowAt >= 0 && allowAt + 1 < args.Length)
+            settings.AskAllowedVids = settings.AskAllowedVids.Concat(args[allowAt + 1].Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)).ToList();
+
+        var registry = ProviderRegistry.CreateDefault();
+        if (args.Contains("--udev-rules")) return UdevRules(registry);
+
+        using var service = new ReadingService(registry, ReadingCache.Load(), settings);
+        var result = service.Refresh();
+        if (result.FatalError is not null)
+        {
+            Console.Error.WriteLine(result.FatalError);
+            return 1;
+        }
+
+        foreach (var d in result.Devices.Where(d => d.IsConnected))
+            Console.WriteLine($"{Value(d),-14} {d.DisplayName}  [{d.HardwareId}{(d.Origin.Length > 0 ? ", " + Known.OriginLabel(d.Origin) : "")}]{(d.Reading.Detail is { Length: > 0 } why && !d.HasBatteryValue ? "  " + why : "")}");
+
+        foreach (var (vid, product) in HidRequest.WaitingConsent)
+            Console.WriteLine(L.T($"\n{product}: para perguntar a bateria, rode com --allow {vid:X4}", $"\n{product}: to ask for its battery, run with --allow {vid:X4}"));
+        if (!HidLinux.Denied.IsEmpty)
+            Console.WriteLine(L.T(
+                $"\nSem permissao para abrir {string.Join(", ", HidLinux.Denied.Keys.Order())}. Para liberar:\n  joule-cli --udev-rules | sudo tee /etc/udev/rules.d/70-joule.rules && sudo udevadm control --reload && sudo udevadm trigger",
+                $"\nNo permission to open {string.Join(", ", HidLinux.Denied.Keys.Order())}. To allow it:\n  joule-cli --udev-rules | sudo tee /etc/udev/rules.d/70-joule.rules && sudo udevadm control --reload && sudo udevadm trigger"));
+        return 0;
+    }
+
+    private static string Value(DeviceEntry d)
+    {
+        string? charge = d.Reading.ChargeText is { Length: > 0 } c ? $" ({c})" : null;
+        if (d.Reading.Status == ReadingStatus.Charging) return L.T("carregando", "charging");
+        if (d.EffectivePercent is int p) return $"{p}%{charge}" + (d.Reading.Percent is null && d.Cache is { } old ? $" ({ReadingCache.DescribeAge(old.Age)})" : "");
+        if (d.EffectiveLevel is { Length: > 0 } lvl) return Known.LevelLabelPtBr(lvl);
+        return d.Reading.Status == ReadingStatus.Unsupported ? L.T("sem suporte", "unsupported") : L.T("sem dado", "no data");
+    }
+
+    /// <summary>
+    /// udev rules for the supported devices plugged in now, by VID:PID: the
+    /// logged-in user gets their hidraw node (uaccess), nothing else does.
+    /// </summary>
+    private static int UdevRules(ProviderRegistry registry)
+    {
+        var ids = HidLinux.Scan()
+            .Where(c => registry.Resolve(c.Vid, c.Pid) is not null || registry.StandaloneProviders.Any(p => p.Handles(c.Vid, c.Pid)))
+            .Select(c => (c.Vid, c.Pid)).Distinct().OrderBy(i => i).ToList();
+        Console.WriteLine("# Joule: lets the logged-in user read the battery of these devices (generated by joule-cli --udev-rules).");
+        foreach (var (vid, pid) in ids)
+            Console.WriteLine($"KERNEL==\"hidraw*\", ATTRS{{idVendor}}==\"{vid:x4}\", ATTRS{{idProduct}}==\"{pid:x4}\", TAG+=\"uaccess\"");
+        if (ids.Count == 0) Console.Error.WriteLine(L.T("Nenhum aparelho suportado plugado agora.", "No supported device plugged in right now."));
+        return 0;
+    }
+}

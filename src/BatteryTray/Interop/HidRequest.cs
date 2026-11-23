@@ -178,6 +178,18 @@ public sealed class HidRequest : IDisposable
     private bool Write(HidCollection target, byte[] request)
     {
         Interlocked.Increment(ref _sent);
+        if (!OperatingSystem.IsWindows())
+        {
+            if (!_writers.TryGetValue(target.Path, out var fd))
+            {
+                fd = HidLinux.Open(target.Path, HidLinux.O_WRONLY);
+                if (fd < 0) return false;
+                _writers[target.Path] = fd;
+            }
+            var padded = new byte[target.OutputLen];
+            Array.Copy(request, padded, request.Length);
+            return HidLinux.Write((int)fd, padded);
+        }
         if (!_writers.TryGetValue(target.Path, out var handle))
         {
             handle = CreateFile(target.Path, GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE,
@@ -243,6 +255,26 @@ public sealed class HidRequest : IDisposable
         if (OverCap()) return null;
         Interlocked.Increment(ref _sent);
 
+        if (!OperatingSystem.IsWindows())
+        {
+            int fd = HidLinux.Open(target.Path, HidLinux.O_RDWR);
+            if (fd < 0) return null;
+            try
+            {
+                if (!HidLinux.SetFeature(fd, (byte[])request.Clone())) return null;
+                for (int i = 0; i < reads; i++)
+                {
+                    Thread.Sleep(wait);
+                    var reply = new byte[request.Length];
+                    reply[0] = request[0];
+                    if (!HidLinux.GetFeature(fd, reply)) return null;
+                    if (!isBusy(reply)) return reply;
+                }
+                return null;
+            }
+            finally { HidLinux.close(fd); }
+        }
+
         IntPtr handle = CreateFile(target.Path, 0, FILE_SHARE_READ | FILE_SHARE_WRITE, IntPtr.Zero, OPEN_EXISTING, 0, IntPtr.Zero);
         if (handle == INVALID_HANDLE_VALUE) return null;
         try
@@ -284,6 +316,18 @@ public sealed class HidRequest : IDisposable
     public static byte[]? ReadFeature(HidCollection target, byte reportId)
     {
         if (target.FeatureLen <= 1 || !Permitted(target)) return null; // nao escreve, mas e' o host pedindo: "So escutar" vale aqui tambem
+        if (!OperatingSystem.IsWindows())
+        {
+            int fd = HidLinux.Open(target.Path, HidLinux.O_RDWR);
+            if (fd < 0) return null;
+            try
+            {
+                var linux = new byte[target.FeatureLen];
+                linux[0] = reportId;
+                return HidLinux.GetFeature(fd, linux) ? linux : null;
+            }
+            finally { HidLinux.close(fd); }
+        }
         IntPtr handle = CreateFile(target.Path, 0, FILE_SHARE_READ | FILE_SHARE_WRITE, IntPtr.Zero, OPEN_EXISTING, 0, IntPtr.Zero);
         if (handle == INVALID_HANDLE_VALUE) return null;
         try
@@ -302,7 +346,11 @@ public sealed class HidRequest : IDisposable
     {
         foreach (var r in _readers) r.Dispose();
         _readers.Clear();
-        foreach (var h in _writers.Values) CloseHandle(h);
+        foreach (var h in _writers.Values)
+        {
+            if (OperatingSystem.IsWindows()) CloseHandle(h);
+            else HidLinux.close((int)h);
+        }
         _writers.Clear();
         _replies.Dispose();
     }
