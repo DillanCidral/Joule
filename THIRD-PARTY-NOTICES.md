@@ -78,6 +78,7 @@ code is Joule's own.
 | [RazerNariBatteryLevel](https://github.com/Modzeleczek/RazerNariBatteryLevel) | Razer Nari (format of the reply only) | no license stated |
 | [OpenMouse](https://github.com/OpenMouse-Project/mouse-protocol) | Attack Shark, Compx and the other brands | AGPL-3.0-or-later |
 | [sanshoku](https://github.com/ushineko/sanshoku) | AULA F75 battery report | MIT |
+| [Linux hid-nintendo](https://github.com/torvalds/linux/blob/master/drivers/hid/hid-nintendo.c) | Switch Pro Controller battery byte | GPL-2.0 |
 
 Thank you to everyone who documented these protocols in the open.
 

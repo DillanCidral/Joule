@@ -76,6 +76,7 @@ Get `JouleApp-win-Setup.exe` with the button above or from the
 | DualSense on Bluetooth, DualShock 4 | cable, Bluetooth (with Steam or a similar program open) | 🧪 not tested yet |
 | Xbox controllers | adapter and cable | ✅ checked |
 | 8BitDo Ultimate 2C | cable | ✅ checked |
+| Switch Pro Controller | Bluetooth (with Steam or a similar program open) | ✅ checked |
 | Any Bluetooth device whose battery Windows already shows in *Settings > Bluetooth* | Bluetooth | ✅ checked |
 | Logitech mice on LIGHTSPEED (PRO X 2 and others) and Unifying (MX Master 2S), SteelSeries Arctis 1 and Arctis 7, VXE R1 Pro Max, VGN IO Aurora, AULA AU75, Razer Basilisk V3 Pro 35K, SteelSeries Arctis Nova 7 Gen 2, Lamzu Maya X, Dark Project Novus, HyperX Cloud Alpha 2 Wireless, AULA F75 (dongle), Pulsar TenZ, SteelSeries Arctis Nova 3P/3X, Logitech G733 | dongle | ✅ confirmed by users |
 | Logitech, Razer, SteelSeries, HyperX and Corsair: mice, keyboards and headsets | dongle | 🧪 not tested yet |
@@ -176,5 +177,5 @@ documentation made Joule possible are listed in
 [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).
 
 Joule is not affiliated with Logitech, Razer, SteelSeries, HyperX, Corsair,
-Sony, Microsoft, 8BitDo or any other brand mentioned here. Their names and
+Sony, Microsoft, Nintendo, 8BitDo or any other brand mentioned here. Their names and
 trademarks belong to their owners.

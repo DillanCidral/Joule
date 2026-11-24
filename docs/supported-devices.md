@@ -23,6 +23,7 @@ each protocol query once per reading (see [SECURITY.md](../SECURITY.md)).
 | DualSense (PS5) | cable; Bluetooth not tested yet | listens | Over Bluetooth the controller only reports battery after a program such as Steam writes to it; Joule only reads what it already sends |
 | DualShock 4 (PS4) | cable and Bluetooth, not tested yet | listens | Same as the DualSense over Bluetooth |
 | Xbox controllers | adapter, cable | XInput | Coarse level (low / medium / full) on the adapter; "on cable" when wired |
+| Switch Pro Controller (`057E:2009`) | Bluetooth; cable not tested yet | listens | Coarse level (empty / low / medium / full) and charging. Like the DualSense over Bluetooth, it only reports battery after a program such as Steam switches it to full reports; Joule only reads what it already sends |
 | 8BitDo Ultimate 2C | cable | XInput | Only "on cable", no percentage. On the dongle it reports a false value, which Joule discards |
 | Any Bluetooth device | Bluetooth | reads Windows | The same number as *Settings > Bluetooth*. Nothing goes over the radio |
 | Zaopin ZPW MAX (8K) | `3554:F527` receiver | asks | Battery percentage confirmed on hardware |

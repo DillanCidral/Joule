@@ -178,6 +178,26 @@ internal static partial class SelfTest
         var bsAsk = BlackSharkProvider.BuildRequest();
         Check("blackshark pergunta: 64 bytes, classe 21, XOR C7 (conferido no aparelho)", bsAsk.Length == 64 && bsAsk[10] == 0x21 && bsAsk[62] == 0xC7);
 
+        // --- Switch Pro Controller: 0x30/0x21, byte 2 bits 7..5 = nivel 0..4, bit 4 = carregando ---
+        // Relatorio real (Bluetooth, Steam aberta): 30 A5 40 ... -> nivel 2 (baixa), descarregando.
+        var swPro = new byte[362]; swPro[0] = 0x30; swPro[1] = 0xA5; swPro[2] = 0x40; swPro[12] = 0x09;
+        Check("switch pro captura real = LOW", SwitchProProvider.ParseStatus(swPro) is { Level: "LOW", Charging: false, Critical: false });
+        swPro[2] = 0x90;
+        Check("switch pro cheio e carregando", SwitchProProvider.ParseStatus(swPro) is { Level: "FULL", Charging: true });
+        swPro[2] = 0x60;
+        Check("switch pro media", SwitchProProvider.ParseStatus(swPro) is { Level: "MEDIUM" });
+        swPro[2] = 0x20;
+        Check("switch pro critica vira LOW marcada", SwitchProProvider.ParseStatus(swPro) is { Level: "LOW", Critical: true });
+        swPro[2] = 0x00;
+        Check("switch pro vazia", SwitchProProvider.ParseStatus(swPro) is { Level: "EMPTY" });
+        swPro[2] = 0xA0;
+        Check("switch pro nivel 5 rejeitado", SwitchProProvider.ParseStatus(swPro) is null);
+        var proSimple = new byte[362]; proSimple[0] = 0x3F; proSimple[2] = 0x80;
+        Check("switch pro modo simples 0x3F sem bateria", SwitchProProvider.ParseStatus(proSimple) is null);
+        Check("switch pro curto demais", SwitchProProvider.ParseStatus(B(0x30, 0x00, 0x80)) is null);
+        var proReply = new byte[49]; proReply[0] = 0x21; proReply[2] = 0x8E;
+        Check("switch pro resposta 0x21 tambem serve", SwitchProProvider.ParseStatus(proReply) is { Level: "FULL", Charging: false });
+
         // --- DualSense: relatorio 0x01 de 64 bytes (so o cabo), byte 53 = nivel + estado ---
         // O caso do controle real medido aqui: 0x29 = estado 2 (cheio), nivel 9.
         Eq("dualsense cheio no cabo", 100, DualSenseProvider.ParseStatus(Ds(0x29))?.Percent);

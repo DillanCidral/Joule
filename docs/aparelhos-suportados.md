@@ -24,6 +24,7 @@ quer dizer que cada consulta do protocolo é enviada uma vez por leitura (veja o
 | DualSense (PS5) | cabo; Bluetooth ainda não testado | escuta | Por Bluetooth o controle só informa a bateria depois que um programa como a Steam escreve nele; o Joule só lê o que ele já manda |
 | DualShock 4 (PS4) | cabo e Bluetooth, ainda não testado | escuta | Igual ao DualSense no Bluetooth |
 | Controles Xbox | adaptador, cabo | XInput | Faixa (baixa / média / cheia) pelo adaptador; "no cabo" quando plugado |
+| Switch Pro Controller (`057E:2009`) | Bluetooth; cabo ainda não testado | escuta | Faixa (vazia / baixa / média / cheia) e carregando. Como o DualSense no Bluetooth, só informa a bateria depois que um programa como a Steam liga o relatório completo; o Joule só lê o que ele já manda |
 | 8BitDo Ultimate 2C | cabo | XInput | Só "no cabo", sem percentual. Pelo dongle ele informa um valor falso, que o Joule descarta |
 | Qualquer aparelho Bluetooth | Bluetooth | lê o Windows | O mesmo número de *Configurações > Bluetooth*. Nada vai pelo rádio |
 | Zaopin ZPW MAX (8K) | receptor `3554:F527` | pergunta | Percentual confirmado no aparelho real |
