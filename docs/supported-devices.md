@@ -23,9 +23,11 @@ each protocol query once per reading (see [SECURITY.md](../SECURITY.md)).
 | DualSense (PS5) | cable; Bluetooth not tested yet | listens | Over Bluetooth the controller only reports battery after a program such as Steam writes to it; Joule only reads what it already sends |
 | DualShock 4 (PS4) | cable and Bluetooth, not tested yet | listens | Same as the DualSense over Bluetooth |
 | Xbox controllers | adapter, cable | XInput | Coarse level (low / medium / full) on the adapter; "on cable" when wired |
+| Switch Pro Controller (`057E:2009`) | Bluetooth; cable not tested yet | listens | Coarse level (empty / low / medium / full) and charging. Like the DualSense over Bluetooth, it only reports battery after a program such as Steam switches it to full reports; Joule only reads what it already sends |
 | 8BitDo Ultimate 2C | cable | XInput | Only "on cable", no percentage. On the dongle it reports a false value, which Joule discards |
 | Any Bluetooth device | Bluetooth | reads Windows | The same number as *Settings > Bluetooth*. Nothing goes over the radio |
 | Zaopin ZPW MAX (8K) | `3554:F527` receiver | asks | Battery percentage confirmed on hardware |
+| GravaStar Mercury K98 Pro | `372E:106C` 8K Wireless Receiver | asks | Battery percentage and charging confirmed on hardware (96%, same as GravaStar's GS HUB). One acknowledged battery question per reading on `FF60/61`: 5 frames out, 5 ACKs back. An asleep keyboard does not answer; press a key and refresh. The AULA HERO 68 Air uses the same receiver and should work too (not tested) |
 | AULA F75 | `258A:010C` cable | presence | Shows "wired", without inventing a percentage |
 | AJAZZ 2.4G 8K | `3151:402D` GearHub-V5 receiver | asks | Receiver status `F7`; battery percentage confirmed on hardware |
 | ATK A9 Ultra V2 | `373B:11FE` 8K NANO receiver | asks | Battery percentage confirmed on hardware. A mouse asleep does not answer; move it and the next reading picks it up |
