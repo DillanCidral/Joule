@@ -23,6 +23,7 @@
     <Compile Include="Diag.cs" />
     <Compile Include="SelfTest.cs" />
     <Compile Include="AtkSelfTest.cs" />
+    <Compile Include="BeiyingSelfTest.cs" />
     <Compile Include="FeatureProbe.cs" />
     <Compile Include="..\..\src\BatteryTray\Core\**\*.cs" />
     <Compile Include="..\..\src\BatteryTray\Interop\**\*.cs" />

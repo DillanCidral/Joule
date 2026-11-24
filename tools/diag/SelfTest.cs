@@ -198,6 +198,8 @@ internal static partial class SelfTest
         var proReply = new byte[49]; proReply[0] = 0x21; proReply[2] = 0x8E;
         Check("switch pro resposta 0x21 tambem serve", SwitchProProvider.ParseStatus(proReply) is { Level: "FULL", Charging: false });
 
+        RunBeiyingTests();
+
         // --- DualSense: relatorio 0x01 de 64 bytes (so o cabo), byte 53 = nivel + estado ---
         // O caso do controle real medido aqui: 0x29 = estado 2 (cheio), nivel 9.
         Eq("dualsense cheio no cabo", 100, DualSenseProvider.ParseStatus(Ds(0x29))?.Percent);

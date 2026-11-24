@@ -58,6 +58,7 @@ public sealed class ProviderRegistry
             new CompxProvider(),
             new AtkMouseProvider(),
             new MercuryProvider(),
+            new BeiyingReceiverProvider(),
             new ChineseBrandsProvider(),
         });
 

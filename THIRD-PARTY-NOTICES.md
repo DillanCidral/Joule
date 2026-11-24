@@ -79,6 +79,7 @@ code is Joule's own.
 | [OpenMouse](https://github.com/OpenMouse-Project/mouse-protocol) | Attack Shark, Compx and the other brands | AGPL-3.0-or-later |
 | [sanshoku](https://github.com/ushineko/sanshoku) | AULA F75 battery report | MIT |
 | [Linux hid-nintendo](https://github.com/torvalds/linux/blob/master/drivers/hid/hid-nintendo.c) | Switch Pro Controller battery byte | GPL-2.0 |
+| [Wireless-Device-Battery-Monitor](https://github.com/oissevalt/Wireless-Device-Battery-Monitor) | 8K Wireless Receiver (`372E:106C`) framing and battery command | GPL-3.0 |
 
 Thank you to everyone who documented these protocols in the open.
 

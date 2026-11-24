@@ -27,6 +27,7 @@ each protocol query once per reading (see [SECURITY.md](../SECURITY.md)).
 | 8BitDo Ultimate 2C | cable | XInput | Only "on cable", no percentage. On the dongle it reports a false value, which Joule discards |
 | Any Bluetooth device | Bluetooth | reads Windows | The same number as *Settings > Bluetooth*. Nothing goes over the radio |
 | Zaopin ZPW MAX (8K) | `3554:F527` receiver | asks | Battery percentage confirmed on hardware |
+| GravaStar Mercury K98 Pro | `372E:106C` 8K Wireless Receiver | asks | Battery percentage and charging confirmed on hardware (96%, same as GravaStar's GS HUB). One acknowledged battery question per reading on `FF60/61`: 5 frames out, 5 ACKs back. An asleep keyboard does not answer; press a key and refresh. The AULA HERO 68 Air uses the same receiver and should work too (not tested) |
 | AULA F75 | `258A:010C` cable | presence | Shows "wired", without inventing a percentage |
 | AJAZZ 2.4G 8K | `3151:402D` GearHub-V5 receiver | asks | Receiver status `F7`; battery percentage confirmed on hardware |
 | ATK A9 Ultra V2 | `373B:11FE` 8K NANO receiver | asks | Battery percentage confirmed on hardware. A mouse asleep does not answer; move it and the next reading picks it up |

@@ -28,6 +28,7 @@ quer dizer que cada consulta do protocolo é enviada uma vez por leitura (veja o
 | 8BitDo Ultimate 2C | cabo | XInput | Só "no cabo", sem percentual. Pelo dongle ele informa um valor falso, que o Joule descarta |
 | Qualquer aparelho Bluetooth | Bluetooth | lê o Windows | O mesmo número de *Configurações > Bluetooth*. Nada vai pelo rádio |
 | Zaopin ZPW MAX (8K) | receptor `3554:F527` | pergunta | Percentual confirmado no aparelho real |
+| GravaStar Mercury K98 Pro | receptor `372E:106C` 8K Wireless Receiver | pergunta | Percentual e carregando confirmados no aparelho (96%, igual ao GS HUB da GravaStar). Uma pergunta de bateria com confirmação por leitura em `FF60/61`: 5 quadros de ida, 5 ACKs de volta. Teclado dormindo não responde; aperte uma tecla e atualize. O AULA HERO 68 Air usa o mesmo receptor e deve funcionar (não testado) |
 | AULA F75 | cabo `258A:010C` | presença | Mostra "no cabo", sem inventar um percentual |
 | AJAZZ 2.4G 8K | receptor GearHub-V5 `3151:402D` | pergunta | Estado `F7` do receptor; percentual confirmado no aparelho real |
 | ATK A9 Ultra V2 | receptor 8K NANO `373B:11FE` | pergunta | Percentual confirmado no aparelho real. Mouse dormindo não responde; mexa nele e a próxima leitura pega |
